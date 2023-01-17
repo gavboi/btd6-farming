@@ -3,7 +3,7 @@
 ; ============================== Setup
 #NoEnv
 #SingleInstance force
-#MaxThreadsPerHotkey 2
+#MaxThreadsPerHotkey 1
 SendMode Input
 SetWorkingDir %A_ScriptDir%
 SetTitleMatchMode 2
@@ -19,171 +19,157 @@ Gui, +Disabled +LastFound +AlwaysOnTop +Border +Owner -SysMenu
 WinSet, TransColor, 00ADEF
 
 ; ------------------------- Variables
-Toggle := false
-State := "off"
+toggle := false
+sToggle := false
+state := "off"
 
-Fav := "dart
+fav := "dart"
+new_fav := "dart"
 
+hotkey_dict := {"dart": "q"
+	, "hero": "u"
+	, "sniper": "z"
+	, "helicopter": "b"}
+
+InputDelay := 50
 ThisTitle := "Bloons Tower Defense 6 Farming"
-GameTitle := "BTD6" ; !!!!!!!!!!!!!!!!!!!!!!!
+GameTitle := "" ; !!!!!!!!!!!!!!!!!!!!!!!
 
 ; ============================== Functions
-MsgBox, , %ThisTitle%, %A_ScriptName% started... {i} for info, 5
+MsgBox, , %ThisTitle%, %A_ScriptName% started... {Ctrl+i} for info, 5
 SetTimer, checkActive, 1000
 
-TurnOff:
-Toggle := false
+turnOff:
+toggle := false
+tt("Functions stopped.")
 return
 
-saveToggles() {
-	global Toggle
-	global sToggle
-	sToggle := Toggle
-}
+saveToggles:
+sToggle := Toggle
 return
 
-loadToggles() {
-	global Toggle
-	global sToggle
-	Toggle := sToggle
-}
+loadToggles:
+Toggle := sToggle
 return
 
-setToggleStates() {
-	global Toggle
-	global sToggle
-	State := Toggle ? "on" : "off"
-}
+setToggleStates:
+State := Toggle ? "on" : "off"
 return
 
-Tt(msg) {
+tt(msg) {
 	Tooltip, %msg%, 50, 50
-	SetTimer, RemoveTooltip, -1000
+	SetTimer, removeTooltip, -1000
 }
 return
-RemoveTooltip:
+removeTooltip:
 Tooltip
 return
 
 ; ------------------------- Info Box
 info:
-setToggleStates()
-saveToggles()
+Gosub setToggleStates
+Gosub saveToggles
 MsgBox, 64, %ThisTitle%,
 (
 // While BTD6 is Active //
 {Ctrl+i} -> Information (this)
-{Ctrl+m} -> Set favourite monkey (current: %Fav%)
-{Ctrl+s} -> Start farming (current: %State%)
+{Ctrl+m} -> Set favourite monkey (current: %fav%)
+{Ctrl+s} -> Start farming (current: %state%)
 
 // Anytime //
 {Ctrl+x} -> Close program/turn all toggles off
 )
-loadToggles()
-Tt("Functions resumed.")
+Gosub loadToggles
+tt("Functions resumed.")
 return
 
 ; ------------------------- Exit
 ^x::Gosub close
 close:
-Gosub TurnOff
-Tt("Functions stopped.")
-MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
-IfMsgBox, OK
-	ExitApp
-MsgBox, , %ThisTitle%, Script continuing..., 1
+if toggle {
+	Gosub turnOff
+} else {
+	Gosub turnOff
+	MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
+	IfMsgBox, OK
+		ExitApp
+	MsgBox, , %ThisTitle%, Script continuing..., 1
+}
 return
 
 ; ------------------------- Disable on unactive
 checkActive:
 if WinActive(GameTitle) {
-	WinWaitNotActive, Cookie Clicker
-	Gosub TurnOff
-	Tt("Functions stopped.")
+	WinWaitNotActive, %GameTitle%
+	Gosub turnOff
 }
 return
 
-; ------------------------- Home
-setHome:
-MouseGetPos, hx, hy
-Tt("Home set.")
+; ------------------------- Find mouse pos (dev)
+^q::
+MouseGetPos, x, y
+tt(x . "," . y)
 return
 
-; ------------------------- Autobuy Buildings
-buy:
-BToggle := !BToggle
-if BToggle {
-	SetTimer, bLoop, 100
-	Tt("Building clicker on.")
-} else {
-	SetTimer, bLoop, Off
-	Tt("Building clicker off.")
+; ------------------------- Set favourite monkey
+favMonkey:
+Gosub ask
+while i == 0 {
+	tt(new_fav . " is not a monkey!")
+	Gosub ask
+}
+fav := new_fav
+return
+ask:
+InputBox, new_fav, %ThisTitle%, Set favourite monkey: , , , , , , , , %fav%
+i := 0
+for key, value in hotkey_dict {
+	i := i + (new_fav == key)
 }
 return
-bLoop:
-PixelSearch, px, py, Max(x1,x2), Max(y1,y2), Min(x1,x2), Min(y1,y2), 0xFFFFFF, , Fast
-if !ErrorLevel and BToggle {
-	Click, %px% %py%
-	Tt("Bought building.")
-	Gosub GoHome
-}
-Sleep BDelay
-return
 
-coord1:
-MouseGetPos, x1, y1
-Tt("Coord 1 set.")
-ShowBox()
-return
-
-coord2:
-MouseGetPos, x2, y2
-Tt("Coord 2 set.")
-ShowBox()
-return
-
-; ------------------------- Autoclick
-click:
-AToggle := !AToggle
-if AToggle {
-	SetTimer, aLoop, %ADelay%
-	Tt("Autoclicker on.")
-} else {
-	SetTimer, aLoop, Off
-	Tt("Autoclicker off.")
+; ------------------------- Start farming
+start:
+toggle := true
+while toggle {
+	tt("Starting round...")
+	press()
+	Sleep 1000
+	; click play
+	; click expert maps
+	; click infernal
+	; click easy
+	; click deflation
+	; wait
+	; place heli
+	; place heli
+	; place sniper?
+	; place hero?
+	; place fav
+	; start
+	; check for level, leave, finish
 }
 return
-aLoop:
-Send {LButton}
-Sleep ADelay
-return 
 
-delay:
-InputBox, ADelay, %ThisTitle%, New autoclick delay (ms), , , , , , , , %ADelay%
-if ADelay is not number
-	delay := 50
-return
-
-; ------------------------- Golden
-checkGolden:
-GToggle := !GToggle
-if GToggle {
-	SetTimer, gLoop, 1500
-	Tt("Golden clicker on.")
-} else {
-	SetTimer, gLoop, Off
-	Tt("Golden clicker off.")
+clickHere(x, y, n=1) {
+	Click, %x% %y% %n%
+	Sleep InputDelay
 }
 return
-gLoop:
-Tt("Looking for golden cookies...")
-Loop 5 {
-	PixelSearch, gx, gy, 0, 0, A_ScreenWidth, A_ScreenHeight, 0x66C2DC, 1, Fast
-	if !ErrorLevel and GToggle {
-		Click, %gx% %gy%
-		Tt("Found golden cookie!")
-		Gosub GoHome
-		Sleep 100
+
+clickThis(img) {
+	; ImageSearch, x, y, ...
+	Click, %x% %y%
+	Sleep InputDelay
+}
+
+press(key=false) {
+	if !key {
+		global hotkey_dict
+		global fav
+		key := hotkey_dict[fav]
 	}
+	Send %key%
+	Sleep InputDelay
 }
-return
+
