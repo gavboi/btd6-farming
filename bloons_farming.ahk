@@ -33,7 +33,9 @@ GameTitle := "" ; !!!!!!!!!!!!!!!!!!!!!!!
 
 ; ============================== Functions
 MsgBox, , %ThisTitle%, %A_ScriptName% started... {Ctrl+i} for info, 5
-SetTimer, checkActive, 1000
+;SetTimer, checkActive, 1000
+
+return
 
 turnOff:
 toggle := false
@@ -132,13 +134,17 @@ while toggle {
 	clickHere(0, 0)				; click play
 	Sleep TransitionDelay
 	clickHere(0, 0)				; click expert maps
-	Sleep TransitionDelay
 	clickHere(0, 0)				; click infernal
 	Sleep TransitionDelay
 	clickHere(0, 0)				; click easy
 	Sleep TransitionDelay
 	clickHere(0, 0)				; click deflation
 	waitForThis("ok.png")		; wait for start
+	if !toggle {
+		break
+	}
+	clickHere(0, 0)
+	Sleep TransitionDelay
 	press("b")					; place heli
 	clickHere(0, 0, 2)
 	Send ,,,..
@@ -152,6 +158,7 @@ while toggle {
 	clickHere(0, 0, 2)
 	Send ,./,./,./
 	Send {Space 2}				; start
+	
 	; check for level, leave, finish
 	break
 }
@@ -164,8 +171,9 @@ clickHere(x, y, n:=1) {
 }
 
 waitForThis(img) {
+	global toggle
 	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	while ErrorLevel > 0
+	while ErrorLevel > 0 and toggle
 		tt("Waiting...")
 		ImageSearch, x, y, 0, 0, 1920, 1080, %img%
 	return
