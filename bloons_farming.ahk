@@ -13,11 +13,6 @@ Hotkey, ^i, info
 Hotkey, ^m, favMonkey
 Hotkey, ^s, start
 
-Gui, Color, 00ADEF
-Gui, +Disabled +LastFound +AlwaysOnTop +Border +Owner -SysMenu
-; no interact, winset target, not hidden on click, show outline, not on taskbar, no minimize etc.
-WinSet, TransColor, 00ADEF
-
 ; ------------------------- Variables
 toggle := false
 sToggle := false
@@ -32,6 +27,7 @@ hotkey_dict := {"dart": "q"
 	, "helicopter": "b"}
 
 InputDelay := 50
+TransitionDelay := 1000
 ThisTitle := "Bloons Tower Defense 6 Farming"
 GameTitle := "" ; !!!!!!!!!!!!!!!!!!!!!!!
 
@@ -133,20 +129,28 @@ start:
 toggle := true
 while toggle {
 	tt("Starting round...")
-	press()
-	Sleep 1000
-	; click play
-	; click expert maps
-	; click infernal
-	; click easy
-	; click deflation
-	; wait
-	; place heli
-	; place heli
+	clickHere()				; click play
+	Sleep TransitionDelay
+	clickHere()				; click expert maps
+	Sleep TransitionDelay
+	clickHere()				; click infernal
+	Sleep TransitionDelay
+	clickHere()				; click easy
+	Sleep TransitionDelay
+	clickHere()				; click deflation
+	waitForThis()			; wait for start
+	press("b")				; place heli
+	clickHere(, 2)
+	Send ,,,..
+	press("b")				; place heli
+	clickHere(, 2)
+	Send ,,,..
 	; place sniper?
-	; place hero?
-	; place fav
-	; start
+	press("u")				; place hero
+	press()					; place fav
+	clickHere(, 2)
+	Send ,./,./,./
+	Send {Space 2}			; start
 	; check for level, leave, finish
 }
 return
@@ -157,10 +161,21 @@ clickHere(x, y, n=1) {
 }
 return
 
+waitForThis(img) {
+	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
+	while ErrorLevel > 0 {
+	tt("Waiting...")
+		ImageSearch, x, y, 0, 0, 1920, 1080, %img%
+	}
+}
+
 clickThis(img) {
-	; ImageSearch, x, y, ...
-	Click, %x% %y%
-	Sleep InputDelay
+	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
+	if ErrorLevel == 0 {
+		Click, %x% %y%
+		Sleep InputDelay
+	}
+	return ErrorLevel
 }
 
 press(key=false) {
