@@ -129,62 +129,63 @@ start:
 toggle := true
 while toggle {
 	tt("Starting round...")
-	clickHere()				; click play
+	clickHere(0, 0)				; click play
 	Sleep TransitionDelay
-	clickHere()				; click expert maps
+	clickHere(0, 0)				; click expert maps
 	Sleep TransitionDelay
-	clickHere()				; click infernal
+	clickHere(0, 0)				; click infernal
 	Sleep TransitionDelay
-	clickHere()				; click easy
+	clickHere(0, 0)				; click easy
 	Sleep TransitionDelay
-	clickHere()				; click deflation
-	waitForThis()			; wait for start
-	press("b")				; place heli
-	clickHere(, 2)
+	clickHere(0, 0)				; click deflation
+	waitForThis("ok.png")		; wait for start
+	press("b")					; place heli
+	clickHere(0, 0, 2)
 	Send ,,,..
-	press("b")				; place heli
-	clickHere(, 2)
+	press("z") 					; place sniper
+	clickHere(0, 0, 2)
+	Send ,,////^{Tab}
+	press("b")					; place heli
+	clickHere(0, 0, 2)
 	Send ,,,..
-	; place sniper?
-	press("u")				; place hero
-	press()					; place fav
-	clickHere(, 2)
+	press()						; place fav
+	clickHere(0, 0, 2)
 	Send ,./,./,./
-	Send {Space 2}			; start
+	Send {Space 2}				; start
 	; check for level, leave, finish
+	break
 }
 return
 
-clickHere(x, y, n=1) {
+clickHere(x, y, n:=1) {
 	Click, %x% %y% %n%
 	Sleep InputDelay
+	return
 }
-return
 
 waitForThis(img) {
 	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	while ErrorLevel > 0 {
-	tt("Waiting...")
+	while ErrorLevel > 0
+		tt("Waiting...")
 		ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	}
+	return
 }
 
 clickThis(img) {
 	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	if ErrorLevel == 0 {
+	if ErrorLevel = 0
 		Click, %x% %y%
 		Sleep InputDelay
-	}
 	return ErrorLevel
 }
 
-press(key=false) {
-	if !key {
+press(key:=false) {
+	if !key
 		global hotkey_dict
 		global fav
 		key := hotkey_dict[fav]
-	}
 	Send %key%
 	Sleep InputDelay
+	return
 }
 
