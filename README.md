@@ -1,5 +1,5 @@
 # Bloons Tower Defense 6: Farming Script
-## Results
+## What Is It?
 Repeatedly plays "Deflation" on "Infernal." Each game takes about *9 minutes (~7 games/hr)?* .
 ### Numbers
 - Earns account levels/monkey knowledge *(120,000 XP/hr)?*
@@ -11,9 +11,9 @@ Repeatedly plays "Deflation" on "Infernal." Each game takes about *9 minutes (~7
 - "Infernal: Easy" beaten
 - "Infernal: Primary only" beaten
     - [Tutorial](https://www.youtube.com/watch?v=Wtgh8M0MDN4)
-### Monkey Prereqs
+### Monkeys
 - 320 helicopter unlocked
-- *204 sniper unlocked?*
+- 204 sniper unlocked
 ## How to use
 ### Instructions
 - Make sure you have the required towers
@@ -21,8 +21,9 @@ Repeatedly plays "Deflation" on "Infernal." Each game takes about *9 minutes (~7
 - Wait on main menu
 - Press `Ctrl+S`, do not touch mouse
 - Press `Ctrl+X` to stop
+- Press `Ctrl+X` again to close
 ### Controls
-- `Ctrl+M` -> ...
-- `Ctrl+S` -> ...
-- `Ctrl+I` -> Information
-- `Ctrl+X` -> Stop automation, open interrupt menu
+- `Ctrl+M` -> Select monkey to level
+- `Ctrl+S` -> Start loop
+- `Ctrl+I` -> Information and stats
+- `Ctrl+X` -> Stop loop, open exit menu
