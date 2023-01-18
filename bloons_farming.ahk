@@ -15,6 +15,8 @@ state := "off"
 
 currentGames := 0
 games := 0
+totalTime := 0
+time := 0
 
 fav := "dart"
 new_fav := "dart"
@@ -68,19 +70,20 @@ return
 turnOff:
 toggle := false
 currentGames := 0
+totalTime := totalTime + A_TickCount - time
 tt("Functions stopped.")
 return
 
 saveToggles:
-sToggle := Toggle
+sToggle := toggle
 return
 
 loadToggles:
-Toggle := sToggle
+toggle := sToggle
 return
 
 setToggleStates:
-State := Toggle ? "on" : "off"
+state := toggle ? "on" : "off"
 return
 
 tt(msg) {
@@ -100,6 +103,14 @@ currentBestXP := 1*currentGames
 bestXP := 1*games
 currentBestMoney := 66*currentGames
 bestMoney := 66*games
+t := (A_TickCount - time) / 1000
+tm := Floor(t / 60)
+ts := Mod(t, 60)
+timeDisp := tm . "min " . ts . "s" 
+t := t + totalTime
+tm := Floor(t / 60)
+ts := Mod(t, 60)
+totalTimeDisp := tm . "min " . ts . "s" 
 MsgBox, 64, %ThisTitle%,
 (
 // While BTD6 is Active //
@@ -114,6 +125,7 @@ MsgBox, 64, %ThisTitle%,
 Games: %currentGames% (total: %games%)
 Best XP: %currentBestXP% (total: %bestXP%)
 Best Money: %currentBestMoney% (total: %bestMoney%)
+Time: %timeDisp% (total active: %totalTimeDisp%) 
 )
 Gosub loadToggles
 tt("Functions resumed.")
@@ -167,6 +179,7 @@ return
 ; ------------------------- Start farming
 start:
 toggle := true
+time := A_TickCount
 while toggle {
 	tt("Starting round...")
 	clickHere(835, 935)						; click play
