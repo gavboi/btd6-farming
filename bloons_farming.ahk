@@ -8,11 +8,6 @@ SendMode Input
 SetWorkingDir %A_ScriptDir%
 SetTitleMatchMode 2
 
-Hotkey, IfWinActive, %GameTitle%
-Hotkey, ^i, info
-Hotkey, ^m, favMonkey
-Hotkey, ^s, start
-
 ; ------------------------- Variables
 toggle := false
 sToggle := false
@@ -22,18 +17,25 @@ fav := "dart"
 new_fav := "dart"
 
 hotkey_dict := {"dart": "q"
+	, "ice": "t"
 	, "hero": "u"
 	, "sniper": "z"
 	, "helicopter": "b"}
 
-InputDelay := 50
-TransitionDelay := 1000
+InputDelay := 150
+TransitionDelay := 800
 ThisTitle := "Bloons Tower Defense 6 Farming"
-GameTitle := "" ; !!!!!!!!!!!!!!!!!!!!!!!
+GameTitle := "BloonsTD6" 
+
+; ------------------------- Hotkeys
+Hotkey, IfWinActive, %GameTitle%
+Hotkey, ^i, info
+Hotkey, ^m, favMonkey
+Hotkey, ^s, start
 
 ; ============================== Functions
 MsgBox, , %ThisTitle%, %A_ScriptName% started... {Ctrl+i} for info, 5
-;SetTimer, checkActive, 1000
+SetTimer, checkActive, 500
 
 return
 
@@ -56,7 +58,7 @@ return
 
 tt(msg) {
 	Tooltip, %msg%, 50, 50
-	SetTimer, removeTooltip, -1000
+	SetTimer, removeTooltip, -2000
 }
 return
 removeTooltip:
@@ -131,69 +133,100 @@ start:
 toggle := true
 while toggle {
 	tt("Starting round...")
-	clickHere(0, 0)				; click play
+	clickHere(835, 935)						; click play
 	Sleep TransitionDelay
-	clickHere(0, 0)				; click expert maps
-	clickHere(0, 0)				; click infernal
+	clickHere(1340, 975)					; click expert maps
 	Sleep TransitionDelay
-	clickHere(0, 0)				; click easy
+	clickHere(535, 580)						; click infernal
 	Sleep TransitionDelay
-	clickHere(0, 0)				; click deflation
-	waitForThis("ok.png")		; wait for start
+	clickHere(625, 400)						; click easy
+	Sleep TransitionDelay
+	clickHere(1290, 445)					; click deflation
+	ErrorLevel := 1
+	while ErrorLevel > 0 and toggle {		; wait for start
+		tt("Waiting...")
+		ImageSearch, x, y, 0, 0, A_ScreenWidth, A_ScreenHeight, ok.png
+		Sleep InputDelay
+	}
 	if !toggle {
 		break
 	}
 	clickHere(0, 0)
 	Sleep TransitionDelay
-	press("b")					; place heli
-	clickHere(0, 0, 2)
-	Send ,,,..
-	press("z") 					; place sniper
-	clickHere(0, 0, 2)
-	Send ,,////^{Tab}
-	press("b")					; place heli
-	clickHere(0, 0, 2)
-	Send ,,,..
-	press()						; place fav
-	clickHere(0, 0, 2)
-	Send ,./,./,./
-	Send {Space 2}				; start
-	
-	; check for level, leave, finish
-	break
+	tt("Placing towers...")
+	press("b")								; place heli
+	clickHere(1560, 575)
+	clickHere(1560, 575)
+	pressStream(",,,..")
+	clickHere(0, 0)
+	press("z") 								; place sniper
+	clickHere(835, 330)
+	clickHere(835, 330)
+	pressStream(",,////")
+	press("{Tab}")
+	press("{Tab}")
+	press("{Tab}")
+	clickHere(0, 0)
+	press("b")								; place heli
+	clickHere(110, 575)
+	clickHere(110, 575)
+	pressStream(",,,..")
+	clickHere(0, 0)
+	press()									; place fav
+	clickHere(835, 745)
+	clickHere(835, 745)
+	pressStream(",./,./,./")
+	clickHere(30, 0)
+	press("{Space}")						; start
+	press("{Space}")	
+	err := 1
+	x := 0
+	y := 0
+	while err > 0 and toggle {				; check for level, leave, finish
+		tt("Watching...")
+		clickHere(30, 0)
+		ImageSearch, x, y, 0, 0, 1920, 1080, home.png
+		err := ErrorLevel
+		if ErrorLevel = 0
+			clickHere(x, y)
+		ImageSearch, x, y, 0, 0, 1920, 1080, next.png
+		if ErrorLevel = 0
+			clickHere(x, y)
+		Sleep TransitionDelay
+	}
+	if !toggle {
+		break
+	}
+	ErrorLevel := 1
+	while ErrorLevel > 0 and toggle {		; wait for home
+		tt("Waiting...")
+		ImageSearch, x, y, 0, 0, A_ScreenWidth, A_ScreenHeight, play.png
+		Sleep InputDelay
+	}
 }
 return
 
-clickHere(x, y, n:=1) {
-	Click, %x% %y% %n%
+clickHere(x, y) {
+	global InputDelay
+	Click, %x% %y%
 	Sleep InputDelay
 	return
-}
-
-waitForThis(img) {
-	global toggle
-	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	while ErrorLevel > 0 and toggle
-		tt("Waiting...")
-		ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	return
-}
-
-clickThis(img) {
-	ImageSearch, x, y, 0, 0, 1920, 1080, %img%
-	if ErrorLevel = 0
-		Click, %x% %y%
-		Sleep InputDelay
-	return ErrorLevel
 }
 
 press(key:=false) {
+	global hotkey_dict
+	global fav
+	global InputDelay
 	if !key
-		global hotkey_dict
-		global fav
 		key := hotkey_dict[fav]
-	Send %key%
+	SendInput %key%
 	Sleep InputDelay
 	return
 }
 
+pressStream(keys) {
+	k := StrSplit(keys)
+	for c in StrSplit(keys)
+		press(k[c])
+	return
+}
