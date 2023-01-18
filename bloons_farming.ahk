@@ -23,7 +23,7 @@ hotkey_dict := {"dart": "q"
 	, "helicopter": "b"}
 
 InputDelay := 150
-TransitionDelay := 800
+TransitionDelay := 500
 ThisTitle := "Bloons Tower Defense 6 Farming"
 GameTitle := "BloonsTD6" 
 
@@ -152,7 +152,7 @@ while toggle {
 		break
 	}
 	clickHere(0, 0)
-	Sleep TransitionDelay
+	Sleep 2*TransitionDelay
 	tt("Placing towers...")
 	press("b")								; place heli
 	clickHere(1560, 575)
@@ -187,6 +187,10 @@ while toggle {
 		clickHere(30, 0)
 		ImageSearch, x, y, 0, 0, 1920, 1080, home.png
 		err := ErrorLevel
+		if ErrorLevel = 0
+			clickHere(x, y)
+		ImageSearch, x, y, 0, 0, 1920, 1080, home2.png
+		err := err*ErrorLevel
 		if ErrorLevel = 0
 			clickHere(x, y)
 		ImageSearch, x, y, 0, 0, 1920, 1080, next.png
