@@ -13,6 +13,9 @@ toggle := false
 sToggle := false
 state := "off"
 
+currentGames := 0
+games := 0
+
 fav := "dart"
 new_fav := "dart"
 
@@ -64,6 +67,7 @@ return
 
 turnOff:
 toggle := false
+currentGames := 0
 tt("Functions stopped.")
 return
 
@@ -92,6 +96,10 @@ return
 info:
 Gosub setToggleStates
 Gosub saveToggles
+currentBestXP := 1*currentGames
+bestXP := 1*games
+currentBestMoney := 66*currentGames
+bestMoney := 66*games
 MsgBox, 64, %ThisTitle%,
 (
 // While BTD6 is Active //
@@ -101,6 +109,11 @@ MsgBox, 64, %ThisTitle%,
 
 // Anytime //
 {Ctrl+x} -> Close program/turn all toggles off
+
+// Stats //
+Games: %currentGames% (total: %games%)
+Best XP: %currentBestXP% (total: %bestXP%)
+Best Money: %currentBestMoney% (total: %bestMoney%)
 )
 Gosub loadToggles
 tt("Functions resumed.")
@@ -224,6 +237,8 @@ while toggle {
 	if !toggle {
 		break
 	}
+	games := games + 1
+	currentGames := currentGames + 1
 	ErrorLevel := 1
 	while ErrorLevel > 0 and toggle {		; wait for home
 		tt("Waiting...")
