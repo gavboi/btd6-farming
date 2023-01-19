@@ -103,7 +103,10 @@ currentBestXP := 1*currentGames
 bestXP := 1*games
 currentBestMoney := 66*currentGames
 bestMoney := 66*games
-t := (A_TickCount - time) / 1000
+if time = 0
+	t := 0
+else
+	t := (A_TickCount - time) / 1000
 tm := Floor(t / 60)
 ts := Mod(t, 60)
 timeDisp := tm . "min " . ts . "s" 
