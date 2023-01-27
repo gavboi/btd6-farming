@@ -227,7 +227,7 @@ while toggle {
 	press()									; place fav
 	clickHere(835, 745)
 	clickHere(835, 745)
-	pressStream(",./,./,./")
+	pressStream(",./,./,./,./")
 	clickHere(30, 0)
 	press("{Space}")						; start
 	press("{Space}")	
