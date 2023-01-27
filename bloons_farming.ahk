@@ -307,8 +307,10 @@ clickHere(x, y) {
 	global InputDelay
 	global xsh
 	global ysh
-	x := x + xsh
-	y := y + ysh
+	global width
+	global height
+	x := (x * width // 1920) + xsh
+	y := (y * height // 1080) + ysh
 	Click, %x% %y%
 	Sleep InputDelay
 	return
