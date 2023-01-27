@@ -1,6 +1,6 @@
 # Bloons Tower Defense 6: Farming Script
 ## What Is It?
-Repeatedly plays "Deflation" on "Infernal." Each game takes about 5min 40s (10-11 games/hr).
+Repeatedly plays "Deflation" on "Infernal." Each game takes just under 6 minutes (10-11 games/hr).
 ### Numbers
 - Earns account levels/monkey knowledge (~600,000 XP/hr)
 - Earns tower XP (varying rates)
@@ -17,7 +17,7 @@ Repeatedly plays "Deflation" on "Infernal." Each game takes about 5min 40s (10-1
 ## How to use
 ### Instructions
 - Make sure you have the required towers
-- Set game to 1920x1080 if not already
+- Set game to 16:9 if not already
 - Wait on main menu
 - Press `Ctrl+S`, do not touch mouse
 - Press `Ctrl+X` to stop
