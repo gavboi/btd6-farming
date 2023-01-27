@@ -99,8 +99,8 @@ return
 info:
 Gosub setToggleStates
 Gosub saveToggles
-currentBestXP := 1*currentGames
-bestXP := 1*games
+currentBestXP := 57000*currentGames
+bestXP := 57000*games
 currentBestMoney := 66*currentGames
 bestMoney := 66*games
 if time = 0
