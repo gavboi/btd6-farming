@@ -13,6 +13,13 @@ toggle := false
 sToggle := false
 state := "off"
 
+xsh := 0
+ysh := 0
+width := 1920
+height := 1080
+full := false
+fullState := "No"
+
 currentGames := 0
 games := 0
 totalTime := 0
@@ -84,8 +91,30 @@ loadToggles:
 toggle := sToggle
 return
 
-setToggleStates:
+setStates:
 state := toggle ? "on" : "off"
+fullState := full ? "Yes" : "No"
+return
+
+; When windowed, game is 18 pixels wider and 47 pixels higher (9 on all sides,
+; except top which is 38). Therefore, the offset from the top and from left
+; must be added to correct a non-fullscreen game's mouse coordinates. The
+; correct game resolution can also be achieved by subtracting the 
+; aforementioned values from GetWinPos.
+scaling:
+WinGetPos, , , width, height, %GameTitle%
+t := Mod(height, 10)
+if (t = 0 || t = 4 || t = 8) {
+	xsh := 0
+	ysh := 0
+	full := true
+} else {
+	xsh := 9
+	ysh := 38
+	width := width - 18
+	height := height - 47
+	full := false
+}
 return
 
 tt(msg) {
@@ -99,7 +128,8 @@ return
 
 ; ------------------------- Info Box
 info:
-Gosub setToggleStates
+Gosub scaling
+Gosub setStates
 Gosub saveToggles
 currentBestXP := 57000*currentGames
 bestXP := 57000*games
@@ -121,6 +151,10 @@ ts := Mod(t, 60)
 totalTimeDisp := tm . "min " . ts . "s" 
 MsgBox, 64, %ThisTitle%,
 (
+// Window //
+Detected size: %width%x%height%
+Fullscreen: %fullState%
+
 // While BTD6 is Active //
 {Ctrl+i} -> Information (this)
 {Ctrl+m} -> Set favourite monkey (current: %fav%)
@@ -185,6 +219,7 @@ return
 
 ; ------------------------- Start farming
 start:
+Gosub scaling
 toggle := true
 time := A_TickCount
 while toggle {
@@ -270,6 +305,10 @@ return
 
 clickHere(x, y) {
 	global InputDelay
+	global xsh
+	global ysh
+	x := x + xsh
+	y := y + ysh
 	Click, %x% %y%
 	Sleep InputDelay
 	return
