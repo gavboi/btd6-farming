@@ -17,6 +17,7 @@ currentGames := 0
 games := 0
 totalTime := 0
 time := 0
+timeEnd := 0
 
 fav := "dart"
 new_fav := "dart"
@@ -70,7 +71,8 @@ return
 turnOff:
 toggle := false
 currentGames := 0
-totalTime := totalTime + A_TickCount - time
+timeEnd := A_TickCount
+totalTime := totalTime + (timeEnd - time) / 1000
 tt("Functions stopped.")
 return
 
@@ -103,14 +105,17 @@ currentBestXP := 57000*currentGames
 bestXP := 57000*games
 currentBestMoney := 66*currentGames
 bestMoney := 66*games
-if time = 0
-	t := 0
-else
+if sToggle
 	t := (A_TickCount - time) / 1000
+else
+	t := (timeEnd - time) / 1000
 tm := Floor(t / 60)
 ts := Mod(t, 60)
-timeDisp := tm . "min " . ts . "s" 
-t := t + totalTime
+timeDisp := tm . "min " . ts . "s"
+if sToggle
+	t := t + totalTime
+else
+	t := totalTime
 tm := Floor(t / 60)
 ts := Mod(t, 60)
 totalTimeDisp := tm . "min " . ts . "s" 
@@ -140,7 +145,6 @@ close:
 if toggle {
 	Gosub turnOff
 } else {
-	Gosub turnOff
 	MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
 	IfMsgBox, OK
 		ExitApp
