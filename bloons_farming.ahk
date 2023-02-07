@@ -233,16 +233,18 @@ while toggle {
 	clickHere(625, 400)						; click easy
 	Sleep TransitionDelay
 	clickHere(1290, 445)					; click deflation
-	ErrorLevel := 1
-	while ErrorLevel > 0 and toggle {		; wait for start
-		tt("Waiting...")
-		ImageSearch, x, y, 0, 0, A_ScreenWidth, A_ScreenHeight, ok.png
+	Sleep TransitionDelay
+	clickHere(1100, 720)					; try and click overwrite
+	color := 0
+	while color != 0x00e15d and toggle {	; wait for start
+		tt("Waiting for game...")
+		PixelGetColor, color, 1020, 760
 		Sleep InputDelay
 	}
 	if !toggle {
 		break
 	}
-	clickHere(0, 0)
+	clickHere(1020, 760)
 	Sleep 2*TransitionDelay
 	tt("Placing towers...")
 	press("b")								; place heli
@@ -269,35 +271,34 @@ while toggle {
 	pressStream(",./,./,./,./,./,./")
 	clickHere(30, 0)
 	press("{Space}")						; start
-	press("{Space}")	
-	err := 1
-	x := 0
-	y := 0
-	while err > 0 and toggle {				; check for level, leave, finish
-		tt("Watching...")
-		clickHere(30, 0)
-		ImageSearch, x, y, 0, 0, 1920, 1080, home.png
-		err := ErrorLevel
-		if ErrorLevel = 0
-			clickHere(x, y)
-		ImageSearch, x, y, 0, 0, 1920, 1080, home2.png
-		err := err*ErrorLevel
-		if ErrorLevel = 0
-			clickHere(x, y)
-		ImageSearch, x, y, 0, 0, 1920, 1080, next.png
-		if ErrorLevel = 0
-			clickHere(x, y)
-		Sleep TransitionDelay
+	press("{Space}")
+	color := 0
+	checking := 1
+	while checking and toggle {				; wait for things to happen
+		tt("Waiting for end...")
+		PixelGetColor, color, 1030, 900 	; check for victory stats's next button
+		if (color = 0x00e76e) {
+			clickHere(1030, 900)
+			Sleep TransitionDelay
+			clickHere(700, 800) 			; home button
+			checking := 0
+			games := games + 1
+			currentGames := currentGames + 1
+		}
+		PixelGetColor, color, 1000, 780		; check for defeat's restart button
+		if (color = 0x00ddff) {
+			clickHere(700, 800) 			; home button
+			checking := 0
+		}
+		Sleep InputDelay
 	}
 	if !toggle {
 		break
 	}
-	games := games + 1
-	currentGames := currentGames + 1
-	ErrorLevel := 1
-	while ErrorLevel > 0 and toggle {		; wait for home
-		tt("Waiting...")
-		ImageSearch, x, y, 0, 0, A_ScreenWidth, A_ScreenHeight, play.png
+	color := 0
+	while color != 0x00e75f and toggle {	; wait for home screen
+		tt("Waiting for menu...")
+		PixelGetColor, color, 870, 970
 		Sleep InputDelay
 	}
 }
