@@ -238,13 +238,14 @@ while toggle {
 	color := 0
 	while color != 0x00e15d and toggle {	; wait for start
 		tt("Waiting for game...")
-		PixelGetColor, color, 1020, 760
+		color := colorHere(1020, 760)
 		Sleep InputDelay
 	}
 	if !toggle {
 		break
 	}
 	clickHere(1020, 760)
+	clickHere(10, 10)
 	Sleep 2*TransitionDelay
 	tt("Placing towers...")
 	press("b")								; place heli
@@ -276,7 +277,7 @@ while toggle {
 	checking := 1
 	while checking and toggle {				; wait for things to happen
 		tt("Waiting for end...")
-		PixelGetColor, color, 1030, 900 	; check for victory stats's next button
+		color := colorHere(1030, 900)	 	; check for victory stats's next button
 		if (color = 0x00e76e) {
 			clickHere(1030, 900)
 			Sleep TransitionDelay
@@ -285,7 +286,7 @@ while toggle {
 			games := games + 1
 			currentGames := currentGames + 1
 		}
-		PixelGetColor, color, 1000, 780		; check for defeat's restart button
+		color := colorHere(1000, 780)		; check for defeat's restart button
 		if (color = 0x00ddff) {
 			clickHere(700, 800) 			; home button
 			checking := 0
@@ -296,9 +297,9 @@ while toggle {
 		break
 	}
 	color := 0
-	while color != 0x00e75f and toggle {	; wait for home screen
+	while color != 0xffffff and toggle {	; wait for home screen
 		tt("Waiting for menu...")
-		PixelGetColor, color, 870, 970
+		color := colorHere(830, 930)
 		Sleep InputDelay
 	}
 }
@@ -315,6 +316,17 @@ clickHere(x, y) {
 	Click, %x% %y%
 	Sleep InputDelay
 	return
+}
+
+colorHere(x, y) {
+	global xsh
+	global ysh
+	global width
+	global height
+	x := (x * width // 1920) + xsh
+	y := (y * height // 1080) + ysh
+	PixelGetColor, color, x, y
+	return color
 }
 
 press(key:=false) {
