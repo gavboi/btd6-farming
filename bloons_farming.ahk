@@ -13,6 +13,13 @@ toggle := false
 sToggle := false
 state := "off"
 
+xsh := 0
+ysh := 0
+width := 1920
+height := 1080
+full := false
+fullState := "No"
+
 currentGames := 0
 games := 0
 totalTime := 0
@@ -84,8 +91,30 @@ loadToggles:
 toggle := sToggle
 return
 
-setToggleStates:
+setStates:
 state := toggle ? "on" : "off"
+fullState := full ? "Yes" : "No"
+return
+
+; When windowed, game is 18 pixels wider and 47 pixels higher (9 on all sides,
+; except top which is 38). Therefore, the offset from the top and from left
+; must be added to correct a non-fullscreen game's mouse coordinates. The
+; correct game resolution can also be achieved by subtracting the 
+; aforementioned values from GetWinPos.
+scaling:
+WinGetPos, , , width, height, %GameTitle%
+t := Mod(height, 10)
+if (t = 0 || t = 4 || t = 8) {
+	xsh := 0
+	ysh := 0
+	full := true
+} else {
+	xsh := 9
+	ysh := 38
+	width := width - 18
+	height := height - 47
+	full := false
+}
 return
 
 tt(msg) {
@@ -99,7 +128,8 @@ return
 
 ; ------------------------- Info Box
 info:
-Gosub setToggleStates
+Gosub scaling
+Gosub setStates
 Gosub saveToggles
 currentBestXP := 57000*currentGames
 bestXP := 57000*games
@@ -121,6 +151,10 @@ ts := Mod(t, 60)
 totalTimeDisp := tm . "min " . ts . "s" 
 MsgBox, 64, %ThisTitle%,
 (
+// Window //
+Detected size: %width%x%height%
+Fullscreen: %fullState%
+
 // While BTD6 is Active //
 {Ctrl+i} -> Information (this)
 {Ctrl+m} -> Set favourite monkey (current: %fav%)
@@ -185,6 +219,7 @@ return
 
 ; ------------------------- Start farming
 start:
+Gosub scaling
 toggle := true
 time := A_TickCount
 while toggle {
@@ -198,16 +233,19 @@ while toggle {
 	clickHere(625, 400)						; click easy
 	Sleep TransitionDelay
 	clickHere(1290, 445)					; click deflation
-	ErrorLevel := 1
-	while ErrorLevel > 0 and toggle {		; wait for start
-		tt("Waiting...")
-		ImageSearch, x, y, 0, 0, A_ScreenWidth, A_ScreenHeight, ok.png
+	Sleep TransitionDelay
+	clickHere(1100, 720)					; try and click overwrite
+	color := 0
+	while color != 0x00e15d and toggle {	; wait for start
+		tt("Waiting for game...")
+		color := colorHere(1020, 760)
 		Sleep InputDelay
 	}
 	if !toggle {
 		break
 	}
-	clickHere(0, 0)
+	clickHere(1020, 760)
+	clickHere(10, 10)
 	Sleep 2*TransitionDelay
 	tt("Placing towers...")
 	press("b")								; place heli
@@ -234,35 +272,34 @@ while toggle {
 	pressStream(",./,./,./,./,./,./")
 	clickHere(30, 0)
 	press("{Space}")						; start
-	press("{Space}")	
-	err := 1
-	x := 0
-	y := 0
-	while err > 0 and toggle {				; check for level, leave, finish
-		tt("Watching...")
-		clickHere(30, 0)
-		ImageSearch, x, y, 0, 0, 1920, 1080, home.png
-		err := ErrorLevel
-		if ErrorLevel = 0
-			clickHere(x, y)
-		ImageSearch, x, y, 0, 0, 1920, 1080, home2.png
-		err := err*ErrorLevel
-		if ErrorLevel = 0
-			clickHere(x, y)
-		ImageSearch, x, y, 0, 0, 1920, 1080, next.png
-		if ErrorLevel = 0
-			clickHere(x, y)
-		Sleep TransitionDelay
+	press("{Space}")
+	color := 0
+	checking := 1
+	while checking and toggle {				; wait for things to happen
+		tt("Waiting for end...")
+		color := colorHere(1030, 900)	 	; check for victory stats's next button
+		if (color = 0x00e76e) {
+			clickHere(1030, 900)
+			Sleep TransitionDelay
+			clickHere(700, 800) 			; home button
+			checking := 0
+			games := games + 1
+			currentGames := currentGames + 1
+		}
+		color := colorHere(1000, 780)		; check for defeat's restart button
+		if (color = 0x00ddff) {
+			clickHere(700, 800) 			; home button
+			checking := 0
+		}
+		Sleep InputDelay
 	}
 	if !toggle {
 		break
 	}
-	games := games + 1
-	currentGames := currentGames + 1
-	ErrorLevel := 1
-	while ErrorLevel > 0 and toggle {		; wait for home
-		tt("Waiting...")
-		ImageSearch, x, y, 0, 0, A_ScreenWidth, A_ScreenHeight, play.png
+	color := 0
+	while color != 0xffffff and toggle {	; wait for home screen
+		tt("Waiting for menu...")
+		color := colorHere(830, 930)
 		Sleep InputDelay
 	}
 }
@@ -270,9 +307,26 @@ return
 
 clickHere(x, y) {
 	global InputDelay
+	global xsh
+	global ysh
+	global width
+	global height
+	x := (x * width // 1920) + xsh
+	y := (y * height // 1080) + ysh
 	Click, %x% %y%
 	Sleep InputDelay
 	return
+}
+
+colorHere(x, y) {
+	global xsh
+	global ysh
+	global width
+	global height
+	x := (x * width // 1920) + xsh
+	y := (y * height // 1080) + ysh
+	PixelGetColor, color, x, y
+	return color
 }
 
 press(key:=false) {
