@@ -277,8 +277,6 @@ while toggle {
 	checking := 1
 	while checking and toggle {				; wait for things to happen
 		tt("Waiting for end...")
-		clickHere(30, 30)					; attempt to close level up screen
-		Sleep TransitionDelay
 		color := colorHere(1030, 900)	 	; check for victory stats's next button
 		if (color = 0x00e76e) {
 			clickHere(1030, 900)
@@ -292,6 +290,12 @@ while toggle {
 		if (color = 0x00ddff) {
 			clickHere(700, 800) 			; home button
 			checking := 0
+		}
+		color := colorHere(855, 560)		; check for level up
+		if (color = 0xffffff) {
+			clickHere(30, 30)	 			; out of the way for level number
+			Sleep TransitionDelay
+			clickHere(30, 30)	 			; out of the way for knowledge
 		}
 		Sleep InputDelay
 	}
