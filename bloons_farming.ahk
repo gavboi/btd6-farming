@@ -13,6 +13,8 @@ toggle := false
 sToggle := false
 state := "off"
 
+step := 0
+
 xsh := 0
 ysh := 0
 width := 1920
@@ -22,6 +24,7 @@ fullState := "No"
 
 currentGames := 0
 games := 0
+lvls := 0
 totalTime := 0
 time := 0
 timeEnd := 0
@@ -166,6 +169,7 @@ Fullscreen: %fullState%
 // Stats //
 Games: %currentGames% (total: %games%)
 Best XP: %currentBestXP% (total: %bestXP%)
+Level ups: %lvls%
 Best Money: %currentBestMoney% (total: %bestMoney%)
 Time: %timeDisp% (total active: %totalTimeDisp%) 
 )
@@ -223,90 +227,105 @@ Gosub scaling
 toggle := true
 time := A_TickCount
 while toggle {
-	tt("Starting round...")
-	clickHere(835, 935)						; click play
-	Sleep TransitionDelay
-	clickHere(1340, 975)					; click expert maps
-	Sleep TransitionDelay
-	clickHere(535, 580)						; click infernal
-	Sleep TransitionDelay
-	clickHere(625, 400)						; click easy
-	Sleep TransitionDelay
-	clickHere(1290, 445)					; click deflation
-	Sleep TransitionDelay
-	clickHere(1100, 720)					; try and click overwrite
-	color := 0
-	while color != 0x00e15d and toggle {	; wait for start
-		tt("Waiting for game...")
-		color := colorHere(1020, 760)
-		Sleep InputDelay
+	if step=0 {									; STEP 0: MENU
+		tt("Starting round...")
+		clickHere(835, 935)						; click play
+		Sleep TransitionDelay
+		clickHere(1340, 975)					; click expert maps
+		Sleep TransitionDelay
+		clickHere(535, 580)						; click infernal
+		Sleep TransitionDelay
+		clickHere(625, 400)						; click easy
+		Sleep TransitionDelay
+		clickHere(1290, 445)					; click deflation
+		Sleep TransitionDelay
+		clickHere(1100, 720)					; try and click overwrite
+		step := 1
 	}
-	if !toggle {
-		break
-	}
-	clickHere(1020, 760)
-	clickHere(10, 10)
-	Sleep 2*TransitionDelay
-	tt("Placing towers...")
-	press("b")								; place heli
-	clickHere(1560, 575)
-	clickHere(1560, 575)
-	pressStream(",,,..")
-	clickHere(0, 0)
-	press("z") 								; place sniper
-	clickHere(835, 330)
-	clickHere(835, 330)
-	pressStream(",,////")
-	press("{Tab}")
-	press("{Tab}")
-	press("{Tab}")
-	clickHere(0, 0)
-	press("b")								; place heli
-	clickHere(110, 575)
-	clickHere(110, 575)
-	pressStream(",,,..")
-	clickHere(0, 0)
-	press()									; place fav
-	clickHere(835, 745)
-	clickHere(835, 745)
-	pressStream(",./,./,./,./,./,./")
-	clickHere(30, 0)
-	press("{Space}")						; start
-	press("{Space}")
-	color := 0
-	checking := 1
-	while checking and toggle {				; wait for things to happen
-		tt("Waiting for end...")
-		color := colorHere(1030, 900)	 	; check for victory stats's next button
-		if (color = 0x00e76e) {
-			clickHere(1030, 900)
-			Sleep TransitionDelay
-			clickHere(700, 800) 			; home button
-			checking := 0
-			games := games + 1
-			currentGames := currentGames + 1
+	if step=1 {									; STEP 1: WAIT FOR LOAD
+		color := 0
+		while color != 0x00e15d and toggle {	; wait for start
+			tt("Waiting for game...")
+			color := colorHere(1020, 760)
+			Sleep InputDelay
 		}
-		color := colorHere(1000, 780)		; check for defeat's restart button
-		if (color = 0x00ddff) {
-			clickHere(700, 800) 			; home button
-			checking := 0
+		if !toggle {
+			break
 		}
-		color := colorHere(855, 560)		; check for level up
-		if (color = 0xffffff) {
-			clickHere(30, 30)	 			; out of the way for level number
-			Sleep TransitionDelay
-			clickHere(30, 30)	 			; out of the way for knowledge
+		step := 2
+	}
+	if step=2 {									; STEP 2: PLACING TOWERS
+		clickHere(1020, 760)
+		clickHere(10, 10)
+		Sleep 2*TransitionDelay
+		tt("Placing towers...")
+		press("b")								; place heli
+		clickHere(1560, 575)
+		clickHere(1560, 575)
+		pressStream(",,,..")
+		clickHere(0, 0)
+		press("z") 								; place sniper
+		clickHere(835, 330)
+		clickHere(835, 330)
+		pressStream(",,////")
+		press("{Tab}")
+		press("{Tab}")
+		press("{Tab}")
+		clickHere(0, 0)
+		press("b")								; place heli
+		clickHere(110, 575)
+		clickHere(110, 575)
+		pressStream(",,,..")
+		clickHere(0, 0)
+		press()									; place fav
+		clickHere(835, 745)
+		clickHere(835, 745)
+		pressStream(",./,./,./,./,./,./")
+		clickHere(30, 0)
+		press("{Space}")						; start
+		press("{Space}")
+		step := 3
+	}
+	if step=3 {									; STEP 3: WAIT FOR STATE CHANGE
+		color := 0
+		checking := 1
+		while checking and toggle {				; wait for things to happen
+			if WinActive(GameTitle) {
+				tt("Waiting for end...")
+				color := colorHere(1030, 900)	 	; check for victory stats's next button
+				if (color = 0x00e76e) {
+					clickHere(1030, 900)
+					Sleep TransitionDelay
+					clickHere(700, 800) 			; home button
+					checking := 0
+					games := games + 1
+					currentGames := currentGames + 1
+				}
+				color := colorHere(1000, 780)		; check for defeat's restart button
+				if (color = 0x00ddff) {
+					clickHere(700, 800) 			; home button
+					checking := 0
+				}
+				color := colorHere(830, 540)		; check for level up
+				if (color = 0x1d61f5) {
+					clickHere(30, 30)	 			; out of the way for level number
+					Sleep TransitionDelay
+					clickHere(30, 30)	 			; out of the way for knowledge
+					lvls := lvls + 1
+				}
+			}
+			Sleep InputDelay
 		}
-		Sleep InputDelay
-	}
-	if !toggle {
-		break
-	}
-	color := 0
-	while color != 0xffffff and toggle {	; wait for home screen
-		tt("Waiting for menu...")
-		color := colorHere(830, 930)
-		Sleep InputDelay
+		if !toggle {
+			break
+		}
+		color := 0
+		while color != 0xffffff and toggle {	; wait for home screen
+			tt("Waiting for menu...")
+			color := colorHere(830, 930)
+			Sleep InputDelay
+		}
+		step := 0
 	}
 }
 return
