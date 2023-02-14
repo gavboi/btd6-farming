@@ -17,7 +17,7 @@ Repeatedly plays "Deflation" on "Infernal." Each game takes just under 6 minutes
 ## How to use
 ### Instructions
 - Make sure you have the required towers
-- Set game to 16:9 if not already (currently only 1920x1080 works)
+- Set game resolution (ideally 16:9)
 - Wait on main menu
 - Press `Ctrl+S`, do not touch mouse
 - Press `Ctrl+X` to stop
