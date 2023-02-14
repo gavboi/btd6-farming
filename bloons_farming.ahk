@@ -13,7 +13,7 @@ toggle := false
 sToggle := false
 state := "off"
 
-step := 3
+step := 0
 
 xsh := 0
 ysh := 0
