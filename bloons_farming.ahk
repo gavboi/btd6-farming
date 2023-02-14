@@ -13,7 +13,7 @@ toggle := false
 sToggle := false
 state := "off"
 
-step := 0
+step := 3
 
 xsh := 0
 ysh := 0
@@ -226,8 +226,8 @@ start:
 Gosub scaling
 toggle := true
 time := A_TickCount
-while toggle {
-	if step=0 {									; STEP 0: MENU
+while (toggle and step>=0) {
+	if (step=0) {								; STEP 0: MENU
 		tt("Starting round...")
 		clickHere(835, 935)						; click play
 		Sleep TransitionDelay
@@ -242,7 +242,7 @@ while toggle {
 		clickHere(1100, 720)					; try and click overwrite
 		step := 1
 	}
-	if step=1 {									; STEP 1: WAIT FOR LOAD
+	if (step=1) {								; STEP 1: WAIT FOR LOAD
 		color := 0
 		while color != 0x00e15d and toggle {	; wait for start
 			tt("Waiting for game...")
@@ -250,11 +250,12 @@ while toggle {
 			Sleep InputDelay
 		}
 		if !toggle {
-			break
+			step := -1
+		} else {
+			step := 2
 		}
-		step := 2
 	}
-	if step=2 {									; STEP 2: PLACING TOWERS
+	if (step=2) {								; STEP 2: PLACING TOWERS
 		clickHere(1020, 760)
 		clickHere(10, 10)
 		Sleep 2*TransitionDelay
@@ -286,7 +287,7 @@ while toggle {
 		press("{Space}")
 		step := 3
 	}
-	if step=3 {									; STEP 3: WAIT FOR STATE CHANGE
+	if (step=3) {								; STEP 3: WAIT FOR STATE CHANGE
 		color := 0
 		checking := 1
 		while checking and toggle {				; wait for things to happen
@@ -317,8 +318,12 @@ while toggle {
 			Sleep InputDelay
 		}
 		if !toggle {
-			break
+			step := -1
+		} else {
+			step := 4
 		}
+	}
+	if (step=4) {								; STEP 4: LOAD HOME SCREEN
 		color := 0
 		while color != 0xffffff and toggle {	; wait for home screen
 			tt("Waiting for menu...")
