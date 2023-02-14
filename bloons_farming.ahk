@@ -226,7 +226,7 @@ start:
 Gosub scaling
 toggle := true
 time := A_TickCount
-while (toggle and step>=0) {
+while toggle {
 	if (step=0) {								; STEP 0: MENU
 		tt("Starting round...")
 		clickHere(835, 935)						; click play
@@ -249,9 +249,7 @@ while (toggle and step>=0) {
 			color := colorHere(1020, 760)
 			Sleep InputDelay
 		}
-		if !toggle {
-			step := -1
-		} else {
+		if toggle {
 			step := 2
 		}
 	}
@@ -317,9 +315,7 @@ while (toggle and step>=0) {
 			}
 			Sleep InputDelay
 		}
-		if !toggle {
-			step := -1
-		} else {
+		if toggle {
 			step := 4
 		}
 	}
