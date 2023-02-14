@@ -181,6 +181,7 @@ return
 ^x::Gosub close
 close:
 if toggle {
+	step := 0
 	Gosub turnOff
 } else {
 	MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
