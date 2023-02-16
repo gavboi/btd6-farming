@@ -234,7 +234,7 @@ while toggle {
 		Sleep TransitionDelay
 		clickHere(1340, 975)					; click expert maps
 		Sleep TransitionDelay
-		clickHere(535, 580)						; click infernal
+		clickHere(960, 580)						; click infernal
 		Sleep TransitionDelay
 		clickHere(625, 400)						; click easy
 		Sleep TransitionDelay
