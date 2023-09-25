@@ -29,8 +29,7 @@ totalTime := 0
 time := 0
 timeEnd := 0
 
-fav := "dart"
-new_fav := "dart"
+TargetMonkey := "dart"
 
 hotkey_dict := {"dart": "q"
 	, "boomerang": "w"
@@ -159,8 +158,8 @@ Gui, Add, Text,, Strategy:
 Gui, Add, DropDownList, vStrategy, Legacy||
 Gui, Add, CheckBox, cdddddd vSimple, Simple Mode
 Gui, Add, CheckBox, cdddddd vExtraDelay, Extra Delay
-Gui, Add, Button, xp ym+220 Default w80, &Save
-Gui, Add, Button, x+m yp w80, E&xit
+Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
+Gui, Add, Button, gExitButton x+m yp w80, E&xit
 Gui, Tab, 2 ; Tracking
 Gui, Add, Text,, Window Size : %width%x%height%
 Gui, Add, Text, y+m, Fullscreen : %fullState%
@@ -179,7 +178,7 @@ Gui, Add, Link, cgray, Detailed instructions on <a href="https://github.com/gavb
 Gui, Show
 return
 
-ButtonSave:
+SaveButton:
 GuiClose:
 Gosub loadToggles
 tt("Functions resumed.")
@@ -187,7 +186,7 @@ return
 
 ; ------------------------- Exit
 ^x::
-ButtonExit:
+ExitButton:
 close:
 Gui, Destroy
 if toggle {
@@ -203,8 +202,8 @@ return
 
 ; ------------------------- Disable on unactive
 checkActive:
-if WinActive(GameTitle) {
-	WinWaitNotActive, %GameTitle%
+if !WinActive(GameTitle) {
+    WinWaitNotActive, %GameTitle% 
 	Gosub turnOff
 }
 return
@@ -270,7 +269,7 @@ while toggle {
 		clickHere(110, 575)
 		pressStream(",,,..")
 		clickHere(0, 0)
-		press()									; place fav
+		press()									; place target monkey
 		clickHere(835, 745)
 		clickHere(835, 745)
 		pressStream(",./,./,./,./,./,./")
@@ -351,10 +350,10 @@ colorHere(x, y) {
 
 press(key:=false) {
 	global hotkey_dict
-	global fav
+	global TargetMonkey
 	global InputDelay
 	if !key
-		key := hotkey_dict[fav]
+		key := hotkey_dict[TargetMonkey]
 	SendInput %key%
 	Sleep InputDelay
 	return
