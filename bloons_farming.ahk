@@ -35,21 +35,16 @@ new_fav := "dart"
 hotkey_dict := {"dart": "q"
 	, "boomerang": "w"
 	, "bomb": "e"
-	, "cannon": "e"
 	, "tack": "r"
 	, "ice": "t"
 	, "glue": "y"
 	, "sniper": "z"
 	, "sub": "x"
 	, "buccaneer": "c"
-	, "ship": "c"
 	, "ace": "v"
-	, "plane": "v"
 	, "heli": "b"
-	, "helicopter": "b"
 	, "mortar": "n"
 	, "dartling": "m"
-	, "gunner": "m"
 	, "wizard": "a"
 	, "super": "s"
 	, "ninja": "d"
@@ -59,6 +54,7 @@ hotkey_dict := {"dart": "q"
 	, "engineer": "l"
 	, "spike": "j"
 	, "village": "k"
+    , "handler": "i"
 	, "hero": "u"}
 
 InputDelay := 150
@@ -68,12 +64,11 @@ GameTitle := "BloonsTD6"
 
 ; ------------------------- Hotkeys
 Hotkey, IfWinActive, %GameTitle%
-Hotkey, ^i, info
-Hotkey, ^m, favMonkey
+Hotkey, ^m, menu
 Hotkey, ^s, start
 
 ; ============================== Functions
-MsgBox, , %ThisTitle%, %A_ScriptName% started... {Ctrl+i} for info, 5
+MsgBox, , %ThisTitle%, %A_ScriptName% started... Ctrl+m for menu, 5
 SetTimer, checkActive, 500
 
 return
@@ -129,8 +124,8 @@ removeTooltip:
 Tooltip
 return
 
-; ------------------------- Info Box
-info:
+; ------------------------- Menu
+menu:
 Gosub scaling
 Gosub setStates
 Gosub saveToggles
@@ -152,34 +147,49 @@ else
 tm := Floor(t / 60)
 ts := Mod(t, 60)
 totalTimeDisp := tm . "min " . ts . "s" 
-MsgBox, 64, %ThisTitle%,
-(
-// Window //
-Detected size: %width%x%height%
-Fullscreen: %fullState%
 
-// While BTD6 is Active //
-{Ctrl+i} -> Information (this)
-{Ctrl+m} -> Set favourite monkey (current: %fav%)
-{Ctrl+s} -> Start farming (current: %state%)
+Gui, BTDF:New,, %ThisTitle%
+Gui, Font, s10, Courier
+Gui, Add, Tab3,, Control|Tracking|Help|
+Gui, Tab, 1 ; Control
+Gui, Add, GroupBox, Section w200 h170, Options
+Gui, Add, Text, xp+10 yp+18, Target Monkey:
+Gui, Add, DropDownList, vTargetMonkey, Dart||Boomerang|Bomb|Tack|Ice|Glue|Sniper|Sub|Buccaneer|Ace|Heli|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Farm|Spike|Village|Engineer|Handler
+Gui, Add, Text,, Strategy:
+Gui, Add, DropDownList, vStrategy, Legacy||
+Gui, Add, CheckBox, cdddddd vSimple, Simple Mode
+Gui, Add, CheckBox, cdddddd vExtraDelay, Extra Delay
+Gui, Add, Button, xp ym+220 Default w80, &Save
+Gui, Add, Button, x+m yp w80, E&xit
+Gui, Tab, 2 ; Tracking
+Gui, Add, Text,, Window Size : %width%x%height%
+Gui, Add, Text, y+m, Fullscreen : %fullState%
+Gui, Add, Text,, Games Played : %games%
+Gui, Add, Text, y+m, Runtime : %totalTimeDisp%
+Gui, Add, Text, y+m, XP Estimate : %bestXP%
+Gui, Add, Text, y+m, Money Estimate : %bestMoney%
+Gui, Tab, 3 ; Help
+Gui, Add, Text,, Alt+Z : This menu
+Gui, Add, Text, y+m, Ctrl+S : Start (when menu closed)
+Gui, Add, Text, y+m, Ctrl+X : Stop (when running) or `n`texit script
+Gui, Add, Text,, Simple Mode : Slower and more `nprone to misclicks, but less `nprone to getting stuck
+Gui, Add, Text,, 'Save' closes GUI and keeps `nchanges, 'X' closes without `nchanges, and 'Exit' ends script
+Gui, Add, Text,, All Strategies require Infernal `nDeflation unlocked
+Gui, Add, Link, cgray, Detailed instructions on <a href="https://github.com/gavboi/btd6-farming">github</a>
+Gui, Show
+return
 
-// Anytime //
-{Ctrl+x} -> Close program/turn all toggles off
-
-// Stats //
-Games: %currentGames% (total: %games%)
-Best XP: %currentBestXP% (total: %bestXP%)
-Level ups: %lvls%
-Best Money: %currentBestMoney% (total: %bestMoney%)
-Time: %timeDisp% (total active: %totalTimeDisp%) 
-)
+ButtonSave:
+GuiClose:
 Gosub loadToggles
 tt("Functions resumed.")
 return
 
 ; ------------------------- Exit
-^x::Gosub close
+^x::
+ButtonExit:
 close:
+Gui, Destroy
 if toggle {
 	step := 0
 	Gosub turnOff
@@ -203,23 +213,6 @@ return
 ^q::
 MouseGetPos, x, y
 tt(x . "," . y)
-return
-
-; ------------------------- Set favourite monkey
-favMonkey:
-Gosub ask
-while i == 0 {
-	tt(new_fav . " is not a monkey!")
-	Gosub ask
-}
-fav := new_fav
-return
-ask:
-InputBox, new_fav, %ThisTitle%, Set favourite monkey: , , , , , , , , %fav%
-i := 0
-for key, value in hotkey_dict {
-	i := i + (new_fav == key)
-}
 return
 
 ; ------------------------- Start farming
