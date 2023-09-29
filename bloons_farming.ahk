@@ -179,6 +179,7 @@ Gui, Show
 return
 
 SaveButton:
+Gui, Submit
 GuiClose:
 Gosub loadToggles
 tt("Functions resumed.")
@@ -188,7 +189,6 @@ return
 ^x::
 ExitButton:
 close:
-Gui, Destroy
 if toggle {
 	step := 0
 	Gosub turnOff
