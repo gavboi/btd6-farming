@@ -208,12 +208,6 @@ if !WinActive(GameTitle) {
 }
 return
 
-; ------------------------- Find mouse pos (dev)
-^q::
-MouseGetPos, x, y
-tt(x . "," . y)
-return
-
 ; ------------------------- Start farming
 start:
 Gosub scaling
