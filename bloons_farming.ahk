@@ -285,7 +285,8 @@ while toggle {
 			if WinActive(GameTitle) {
 				tt("Waiting for end...")
 				color := colorHere(1030, 900)	 	; check for victory stats's next button
-				if (color = 0x00e76e) {
+				if (nearColor(color, 0x00e76e)) {
+                    tt("victory!")
 					clickHere(1030, 900)
 					Sleep TransitionDelay
 					clickHere(700, 800) 			; home button
@@ -293,13 +294,15 @@ while toggle {
 					games := games + 1
 					currentGames := currentGames + 1
 				}
-				color := colorHere(1000, 780)		; check for defeat's restart button
-				if (color = 0x00ddff) {
+				color := colorHere(925, 770)		; check for defeat's restart button
+				if (nearColor(color, 0x00ddff)) {
+                    tt("defeat")
 					clickHere(700, 800) 			; home button
 					checking := 0
 				}
 				color := colorHere(830, 540)		; check for level up
-				if (color = 0x1d61f5) {
+				if (nearColor(color, 0x1d61f5)) {
+                    tt("lvl up!")
 					clickHere(30, 30)	 			; out of the way for level number
 					Sleep TransitionDelay
 					clickHere(30, 30)	 			; out of the way for knowledge
@@ -312,9 +315,9 @@ while toggle {
 			step := 4
 		}
 	}
-	if (step=4) {								; STEP 4: LOAD HOME SCREEN
+	if (step=4) {								        ; STEP 4: LOAD HOME SCREEN
 		color := 0
-		while color != 0xffffff and toggle {	; wait for home screen
+		while !nearColor(color, 0xffffff) and toggle {	; wait for home screen
 			tt("Waiting for menu...")
 			color := colorHere(830, 930)
 			Sleep InputDelay
@@ -346,6 +349,20 @@ colorHere(x, y) {
 	y := (y * height // 1080) + ysh
 	PixelGetColor, color, x, y
 	return color
+}
+
+nearColor(test, target) { ; by user "colt" on ahk wiki
+    tolerance := 5
+    tb := format("{:d}", "0x" . substr(test,3,2))
+    tg := format("{:d}", "0x" . substr(test,5,2))
+    tr := format("{:d}", "0x" . substr(test,7,2))
+    b := format("{:d}", "0x" . substr(target,3,2))
+    g := format("{:d}", "0x" . substr(target,5,2))
+    r := format("{:d}", "0x" . substr(target,7,2))
+    distance := sqrt((b-tb)**2+(g-tg)**2+(r-tr)**2)
+    if(distance<tolerance)
+        return true
+    return false
 }
 
 press(key:=false) {
