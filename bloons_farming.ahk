@@ -57,7 +57,10 @@ hotkey_dict := {"dart": "q"
 	, "hero": "u"}
 
 InputDelay := 150
+BaseInputDelay := 150
 TransitionDelay := 500
+BaseTransitionDelay := 500
+ExtraDelay := 0
 ThisTitle := "Bloons Tower Defense 6 Farming"
 GameTitle := "BloonsTD6" 
 
@@ -156,8 +159,10 @@ Gui, Add, Text, xp+10 yp+18, Target Monkey:
 Gui, Add, DropDownList, vTargetMonkey, Dart||Boomerang|Bomb|Tack|Ice|Glue|Sniper|Sub|Buccaneer|Ace|Heli|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Farm|Spike|Village|Engineer|Handler
 Gui, Add, Text,, Strategy:
 Gui, Add, DropDownList, vStrategy, Legacy||
-Gui, Add, CheckBox, cdddddd vSimple, Simple Mode
-Gui, Add, CheckBox, cdddddd vExtraDelay, Extra Delay
+Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
+; Simple Mode button is unused
+Gui, Add, CheckBox, vSimple, UNUSED
+GuiControl, Disable, Simple
 Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
 Gui, Add, Button, gExitButton x+m yp w80, E&xit
 Gui, Tab, 2 ; Tracking
@@ -180,6 +185,8 @@ return
 
 SaveButton:
 Gui, Submit
+InputDelay := BaseInputDelay * (1+ExtraDelay)
+TransitionDelay := BaseTransitionDelay * (1+ExtraDelay)
 GuiClose:
 Gosub loadToggles
 tt("Functions resumed.")
