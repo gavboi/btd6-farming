@@ -156,7 +156,7 @@ Gui, Add, Tab3,, Control|Tracking|Help|
 Gui, Tab, 1 ; Control
 Gui, Add, GroupBox, Section w200 h170, Options
 Gui, Add, Text, xp+10 yp+18, Target Monkey:
-Gui, Add, DropDownList, vTargetMonkey, Dart||Boomerang|Bomb|Tack|Ice|Glue|Sniper|Sub|Buccaneer|Ace|Heli|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Farm|Spike|Village|Engineer|Handler
+Gui, Add, DropDownList, vTargetMonkey, Dart||Boomerang|Bomb|Tack|Ice|Glue|Sniper|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Spike|Village|Engineer|Handler
 Gui, Add, Text,, Strategy:
 Gui, Add, DropDownList, vStrategy, Legacy||
 Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
