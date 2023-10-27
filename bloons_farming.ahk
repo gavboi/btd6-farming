@@ -158,7 +158,7 @@ Gui, Add, GroupBox, Section w200 h170, Options
 Gui, Add, Text, xp+10 yp+18, Target Monkey:
 Gui, Add, DropDownList, vTargetMonkey, Dart||Boomerang|Bomb|Tack|Ice|Glue|Sniper|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Spike|Village|Engineer|Handler
 Gui, Add, Text,, Strategy:
-Gui, Add, DropDownList, vStrategy, Legacy||
+Gui, Add, DropDownList, vStrategy, Heli||Sniper
 Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
 ; Simple Mode button is unused
 Gui, Add, CheckBox, vSimple, UNUSED
@@ -173,7 +173,7 @@ Gui, Add, Text, y+m, Runtime : %totalTimeDisp%
 Gui, Add, Text, y+m, XP Estimate : %bestXP%
 Gui, Add, Text, y+m, Money Estimate : %bestMoney%
 Gui, Tab, 3 ; Help
-Gui, Add, Text,, Alt+Z : This menu
+Gui, Add, Text,, Ctrl+M : This menu
 Gui, Add, Text, y+m, Ctrl+S : Start (when menu closed)
 Gui, Add, Text, y+m, Ctrl+X : Stop (when running) or `n`texit script
 Gui, Add, Text,, Simple Mode : Slower and more `nprone to misclicks, but less `nprone to getting stuck
@@ -248,31 +248,53 @@ while toggle {
 		}
 	}
 	if (step=2) {								; STEP 2: PLACING TOWERS
-		clickHere(1020, 760)
-		clickHere(10, 10)
-		Sleep 2*TransitionDelay
-		tt("Placing towers...")
-		press("b")								; place heli
-		clickHere(1560, 575)
-		clickHere(1560, 575)
-		pressStream(",,,..")
-		clickHere(0, 0)
-		press("z") 								; place sniper
-		clickHere(835, 330)
-		clickHere(835, 330)
-		pressStream(",,////")
-		press("{Tab}")
-		press("{Tab}")
-		press("{Tab}")
-		clickHere(0, 0)
-		press("b")								; place heli
-		clickHere(110, 575)
-		clickHere(110, 575)
-		pressStream(",,,..")
-		clickHere(0, 0)
-		press()									; place target monkey
-		clickHere(835, 745)
-		clickHere(835, 745)
+        clickHere(1020, 760)
+        clickHere(10, 10)
+        Sleep 2*TransitionDelay
+        tt("Placing towers...")
+        if (Strategy="Heli") {
+            press("b")								; place heli
+            clickHere(1560, 575)
+            clickHere(1560, 575)
+            pressStream(",,,..")
+            clickHere(0, 0)
+            press("z") 								; place sniper
+            clickHere(835, 330)
+            clickHere(835, 330)
+            pressStream(",,////")
+            press("{Tab}")
+            press("{Tab}")
+            press("{Tab}")
+            clickHere(0, 0)
+            press("b")								; place heli
+            clickHere(110, 575)
+            clickHere(110, 575)
+            pressStream(",,,..")
+            clickHere(0, 0)
+            press()									; place target monkey
+            clickHere(835, 745)
+            clickHere(835, 745)
+        }
+        if (Strategy="Sniper") {
+            press("k")                              ; place village
+            clickHere(1575, 500)
+            clickHere(1575, 500)
+            pressStream(",,//")
+            clickHere(0, 0)
+            press("z")                              ; place sniper
+            clickHere(1550, 585)
+            clickHere(1550, 585)
+            pressStream("..////")
+            clickHere(0, 0)
+            press("f")                              ; place alchemist
+            clickHere(1575, 650)
+            clickHere(1575, 650)
+            pressStream(",,,/")
+            clickHere(0, 0)
+            press()									; place target monkey
+            clickHere(110, 560)
+            clickHere(110, 560)
+        }
 		pressStream(",./,./,./,./,./,./")
 		clickHere(30, 0)
 		press("{Space}")						; start
