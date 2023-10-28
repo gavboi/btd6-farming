@@ -70,11 +70,13 @@ Hotkey, ^m, menu
 Hotkey, ^s, start
 
 ; ============================== Functions
-MsgBox, , %ThisTitle%, %A_ScriptName% started... Ctrl+m for menu, 5
+; Startup message
+MsgBox, , %ThisTitle%, %A_ScriptName% started... Ctrl+M for menu, 5
 SetTimer, checkActive, 500
 
 return
 
+; Pause main loop
 turnOff:
 toggle := false
 currentGames := 0
@@ -117,6 +119,7 @@ if (t = 0 || t = 4 || t = 8) {
 }
 return
 
+; Show status message in top corner
 tt(msg) {
 	Tooltip, %msg%, 50, 50
 	SetTimer, removeTooltip, -2000
@@ -127,7 +130,9 @@ Tooltip
 return
 
 ; ------------------------- Menu
+; Options and information window
 menu:
+; calculate needed information
 Gosub scaling
 Gosub setStates
 Gosub saveToggles
@@ -149,7 +154,7 @@ else
 tm := Floor(t / 60)
 ts := Mod(t, 60)
 totalTimeDisp := tm . "min " . ts . "s" 
-
+; create menu
 Gui, BTDF:New,, %ThisTitle%
 Gui, Font, s10, Courier
 Gui, Add, Tab3,, Control|Tracking|Help|
@@ -183,6 +188,7 @@ Gui, Add, Link, cgray, Detailed instructions on <a href="https://github.com/gavb
 Gui, Show
 return
 
+; Update variables based on menu settings
 SaveButton:
 Gui, Submit
 InputDelay := BaseInputDelay * (1+ExtraDelay)
@@ -193,6 +199,7 @@ tt("Functions resumed.")
 return
 
 ; ------------------------- Exit
+; Stop script, or close script if already stopped
 ^x::
 ExitButton:
 close:
@@ -208,6 +215,7 @@ if toggle {
 return
 
 ; ------------------------- Disable on unactive
+; Stop click checks if game isn't active
 checkActive:
 if !WinActive(GameTitle) {
     WinWaitNotActive, %GameTitle% 
@@ -216,6 +224,7 @@ if !WinActive(GameTitle) {
 return
 
 ; ------------------------- Start farming
+; Main loop
 start:
 Gosub scaling
 toggle := true
@@ -350,6 +359,7 @@ while toggle {
 }
 return
 
+; Click at location, normalised with delay added
 clickHere(x, y) {
 	global InputDelay
 	global xsh
@@ -363,6 +373,7 @@ clickHere(x, y) {
 	return
 }
 
+; Get colour at location, normalised
 colorHere(x, y) {
 	global xsh
 	global ysh
@@ -374,7 +385,8 @@ colorHere(x, y) {
 	return color
 }
 
-nearColor(test, target) { ; by user "colt" on ahk wiki
+; Check for colour equivalence under threshold - by user "colt" on ahk wiki
+nearColor(test, target) { 
     tolerance := 5
     tb := format("{:d}", "0x" . substr(test,3,2))
     tg := format("{:d}", "0x" . substr(test,5,2))
@@ -388,6 +400,7 @@ nearColor(test, target) { ; by user "colt" on ahk wiki
     return false
 }
 
+; Press key, with delay added
 press(key:=false) {
 	global hotkey_dict
 	global TargetMonkey
@@ -399,6 +412,7 @@ press(key:=false) {
 	return
 }
 
+; Press keys in sequence, with delay added
 pressStream(keys) {
 	k := StrSplit(keys)
 	for c in StrSplit(keys)
