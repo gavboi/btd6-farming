@@ -10,8 +10,6 @@ SetTitleMatchMode 2
 
 ; ------------------------- Variables
 toggle := false
-sToggle := false
-state := "off"
 
 step := 0
 
@@ -20,13 +18,12 @@ ysh := 0
 width := 1920
 height := 1080
 full := false
-fullState := "No"
 
 currentGames := 0
 games := 0
 lvls := 0
 totalTime := 0
-time := 0
+timeStart := 0
 timeEnd := 0
 
 TargetMonkey := "dart"
@@ -79,23 +76,9 @@ return
 ; Pause main loop
 turnOff:
 toggle := false
-currentGames := 0
 timeEnd := A_TickCount
-totalTime := totalTime + (timeEnd - time) / 1000
+totalTime := totalTime + (timeEnd - timeStart) / 1000
 tt("Functions stopped.")
-return
-
-saveToggles:
-sToggle := toggle
-return
-
-loadToggles:
-toggle := sToggle
-return
-
-setStates:
-state := toggle ? "on" : "off"
-fullState := full ? "Yes" : "No"
 return
 
 ; When windowed, game is 18 pixels wider and 47 pixels higher (9 on all sides,
@@ -134,26 +117,17 @@ return
 menu:
 ; calculate needed information
 Gosub scaling
-Gosub setStates
-Gosub saveToggles
-currentBestXP := 57000*currentGames
-bestXP := 57000*games
-currentBestMoney := 66*currentGames
-bestMoney := 66*games
-if sToggle
-	t := (A_TickCount - time) / 1000
-else
-	t := (timeEnd - time) / 1000
-tm := Floor(t / 60)
-ts := Mod(t, 60)
-timeDisp := tm . "min " . ts . "s"
-if sToggle
-	t := t + totalTime
+toggleText := toggle ? "On" : "Off"
+fullText := full ? "Yes" : "No"
+XPCount := 57000*games
+moneyCount := 66*games
+if (toggle) {
+	t := totalTime + (A_TickCount - timeStart) / 1000
 else
 	t := totalTime
 tm := Floor(t / 60)
 ts := Mod(t, 60)
-totalTimeDisp := tm . "min " . ts . "s" 
+timeText := tm . "min " . ts . "s"
 ; create menu
 Gui, BTDF:New,, %ThisTitle%
 Gui, Font, s10, Courier
@@ -172,11 +146,11 @@ Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
 Gui, Add, Button, gExitButton x+m yp w80, E&xit
 Gui, Tab, 2 ; Tracking
 Gui, Add, Text,, Window Size : %width%x%height%
-Gui, Add, Text, y+m, Fullscreen : %fullState%
+Gui, Add, Text, y+m, Fullscreen : %fullText%
 Gui, Add, Text,, Games Played : %games%
-Gui, Add, Text, y+m, Runtime : %totalTimeDisp%
-Gui, Add, Text, y+m, XP Estimate : %bestXP%
-Gui, Add, Text, y+m, Money Estimate : %bestMoney%
+Gui, Add, Text, y+m, Runtime : %timeText%
+Gui, Add, Text, y+m, XP Estimate : %XPCount%
+Gui, Add, Text, y+m, Money Estimate : %moneyCount%
 Gui, Tab, 3 ; Help
 Gui, Add, Text,, Ctrl+M : This menu
 Gui, Add, Text, y+m, Ctrl+S : Start (when menu closed)
@@ -194,7 +168,6 @@ Gui, Submit
 InputDelay := BaseInputDelay * (1+ExtraDelay)
 TransitionDelay := BaseTransitionDelay * (1+ExtraDelay)
 GuiClose:
-Gosub loadToggles
 tt("Functions resumed.")
 return
 
@@ -228,7 +201,7 @@ return
 start:
 Gosub scaling
 toggle := true
-time := A_TickCount
+timeStart := A_TickCount
 while toggle {
 	if (step=0) {								; STEP 0: MENU
 		tt("Starting round...")
