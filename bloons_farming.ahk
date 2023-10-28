@@ -10,7 +10,8 @@ SetTitleMatchMode 2
 
 ; ------------------------- Variables
 toggle := false
-
+inCriticalSection := false
+menuOpen := false
 step := 0
 
 xsh := 0
@@ -19,7 +20,6 @@ width := 1920
 height := 1080
 full := false
 
-currentGames := 0
 games := 0
 lvls := 0
 totalTime := 0
@@ -115,6 +115,11 @@ return
 ; ------------------------- Menu
 ; Options and information window
 menu:
+; don't interrupt script doing things
+while (inCriticalSection) {
+    Sleep 500
+}
+menuOpen := true
 ; calculate needed information
 Gosub scaling
 toggleText := toggle ? "On" : "Off"
@@ -168,6 +173,7 @@ Gui, Submit
 InputDelay := BaseInputDelay * (1+ExtraDelay)
 TransitionDelay := BaseTransitionDelay * (1+ExtraDelay)
 GuiClose:
+menuOpen := false
 tt("Functions resumed.")
 return
 
@@ -177,6 +183,7 @@ return
 ExitButton:
 close:
 if toggle {
+    inCriticalSection := false
 	step := 0
 	Gosub turnOff
 } else {
@@ -188,10 +195,9 @@ if toggle {
 return
 
 ; ------------------------- Disable on unactive
-; Stop click checks if game isn't active
+; Stop script to avoid click checks if game/menu isn't active
 checkActive:
-if !WinActive(GameTitle) {
-    WinWaitNotActive, %GameTitle% 
+if !(WinActive(GameTitle) || WinActive(ThisTitle)) { 
 	Gosub turnOff
 }
 return
@@ -204,6 +210,7 @@ toggle := true
 timeStart := A_TickCount
 while toggle {
 	if (step=0) {								; STEP 0: MENU
+        inCriticalSection := true
 		tt("Starting round...")
 		clickHere(835, 935)						; click play
 		Sleep TransitionDelay
@@ -217,10 +224,11 @@ while toggle {
 		Sleep TransitionDelay
 		clickHere(1100, 720)					; try and click overwrite
 		step := 1
+        inCriticalSection := false
 	}
 	if (step=1) {								; STEP 1: WAIT FOR LOAD
 		color := 0
-		while color != 0x00e15d and toggle {	; wait for start
+		while color != 0x00e15d and toggle and !menuOpen {	; wait for start
 			tt("Waiting for game...")
 			color := colorHere(1020, 760)
 			Sleep InputDelay
@@ -230,6 +238,7 @@ while toggle {
 		}
 	}
 	if (step=2) {								; STEP 2: PLACING TOWERS
+        inCriticalSection := true
         clickHere(1020, 760)
         clickHere(10, 10)
         Sleep 2*TransitionDelay
@@ -282,38 +291,40 @@ while toggle {
 		press("{Space}")						; start
 		press("{Space}")
 		step := 3
+        inCriticalSection := false
 	}
 	if (step=3) {								; STEP 3: WAIT FOR STATE CHANGE
 		color := 0
 		checking := 1
-		while checking and toggle {				; wait for things to happen
-			if WinActive(GameTitle) {
-				tt("Waiting for end...")
-				color := colorHere(1030, 900)	 	; check for victory stats's next button
-				if (nearColor(color, 0x00e76e)) {
-                    tt("victory!")
-					clickHere(1030, 900)
-					Sleep TransitionDelay
-					clickHere(700, 800) 			; home button
-					checking := 0
-					games := games + 1
-					currentGames := currentGames + 1
-				}
-				color := colorHere(925, 770)		; check for defeat's restart button
-				if (nearColor(color, 0x00ddff)) {
-                    tt("defeat")
-					clickHere(700, 800) 			; home button
-					checking := 0
-				}
-				color := colorHere(830, 540)		; check for level up
-				if (nearColor(color, 0x1d61f5)) {
-                    tt("lvl up!")
-					clickHere(30, 30)	 			; out of the way for level number
-					Sleep TransitionDelay
-					clickHere(30, 30)	 			; out of the way for knowledge
-					lvls := lvls + 1
-				}
-			}
+		while checking and toggle and !menuOpen {	; wait for things to happen
+            tt("Waiting for end...")
+            color := colorHere(1030, 900)	 	; check for victory stats's next button
+            if (nearColor(color, 0x00e76e)) {
+                inCriticalSection := true
+                tt("victory!")
+                clickHere(1030, 900)
+                Sleep TransitionDelay
+                clickHere(700, 800) 			; home button
+                checking := 0
+                games := games + 1
+                inCriticalSection := false
+            }
+            color := colorHere(925, 770)		; check for defeat's restart button
+            if (nearColor(color, 0x00ddff)) {
+                tt("defeat")
+                clickHere(700, 800) 			; home button
+                checking := 0
+            }
+            color := colorHere(830, 540)		; check for level up
+            if (nearColor(color, 0x1d61f5)) {
+                inCriticalSection := true
+                tt("lvl up!")
+                clickHere(30, 30)	 			; out of the way for level number
+                Sleep TransitionDelay
+                clickHere(30, 30)	 			; out of the way for knowledge
+                lvls := lvls + 1
+                inCriticalSection := false
+            }
 			Sleep InputDelay
 		}
 		if toggle {
@@ -322,7 +333,7 @@ while toggle {
 	}
 	if (step=4) {								        ; STEP 4: LOAD HOME SCREEN
 		color := 0
-		while !nearColor(color, 0xffffff) and toggle {	; wait for home screen
+		while !nearColor(color, 0xffffff) and toggle and !menuOpen {	; wait for home screen
 			tt("Waiting for menu...")
 			color := colorHere(830, 930)
 			Sleep InputDelay
