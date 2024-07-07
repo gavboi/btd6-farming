@@ -75,10 +75,12 @@ return
 
 ; Pause main loop
 turnOff:
+if (toggle) {
+    totalTime := totalTime + (timeEnd - timeStart) / 1000
+    tt("Functions stopped.")
+}
 toggle := false
 timeEnd := A_TickCount
-totalTime := totalTime + (timeEnd - timeStart) / 1000
-tt("Functions stopped.")
 return
 
 ; When windowed, game is 18 pixels wider and 47 pixels higher (9 on all sides,
@@ -128,8 +130,9 @@ XPCount := 57000*games
 moneyCount := 66*games
 if (toggle) {
 	t := totalTime + (A_TickCount - timeStart) / 1000
-else
+} else {
 	t := totalTime
+}
 tm := Floor(t / 60)
 ts := Mod(t, 60)
 timeText := tm . "min " . ts . "s"
