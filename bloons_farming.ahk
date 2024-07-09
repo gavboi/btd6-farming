@@ -27,6 +27,7 @@ timeStart := 0
 timeEnd := 0
 
 TargetMonkey := "dart"
+Strategy := "heli"
 
 hotkey_dict := {"dart": "q"
 	, "boomerang": "w"
@@ -65,22 +66,22 @@ GameTitle := "BloonsTD6"
 Hotkey, IfWinActive, %GameTitle%
 Hotkey, ^m, menu
 Hotkey, ^s, start
+Hotkey, ^d, debug
 
 ; ============================== Functions
 ; Startup message
 MsgBox, , %ThisTitle%, %A_ScriptName% started... Ctrl+M for menu, 5
 SetTimer, checkActive, 500
-
 return
 
 ; Pause main loop
 turnOff:
 if (toggle) {
+    timeEnd := A_TickCount
     totalTime := totalTime + (timeEnd - timeStart) / 1000
     tt("Functions stopped.")
 }
 toggle := false
-timeEnd := A_TickCount
 return
 
 ; When windowed, game is 18 pixels wider and 47 pixels higher (9 on all sides,
@@ -110,240 +111,9 @@ tt(msg) {
 	SetTimer, removeTooltip, -2000
 }
 return
+
 removeTooltip:
 Tooltip
-return
-
-; ------------------------- Menu
-; Options and information window
-menu:
-; don't interrupt script doing things
-while (inCriticalSection) {
-    Sleep 500
-}
-menuOpen := true
-; calculate needed information
-Gosub scaling
-toggleText := toggle ? "On" : "Off"
-fullText := full ? "Yes" : "No"
-XPCount := 57000*games
-moneyCount := 66*games
-if (toggle) {
-	t := totalTime + (A_TickCount - timeStart) / 1000
-} else {
-	t := totalTime
-}
-tm := Floor(t / 60)
-ts := Mod(t, 60)
-timeText := tm . "min " . ts . "s"
-; create menu
-Gui, BTDF:New,, %ThisTitle%
-Gui, Font, s10, Courier
-Gui, Add, Tab3,, Control|Tracking|Help|
-Gui, Tab, 1 ; Control
-Gui, Add, GroupBox, Section w200 h170, Options
-Gui, Add, Text, xp+10 yp+18, Target Monkey:
-Gui, Add, DropDownList, vTargetMonkey, Dart||Boomerang|Bomb|Tack|Ice|Glue|Sniper|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Spike|Village|Engineer|Handler
-Gui, Add, Text,, Strategy:
-Gui, Add, DropDownList, vStrategy, Heli||Sniper
-Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
-; Simple Mode button is unused
-Gui, Add, CheckBox, vSimple, UNUSED
-GuiControl, Disable, Simple
-Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
-Gui, Add, Button, gExitButton x+m yp w80, E&xit
-Gui, Tab, 2 ; Tracking
-Gui, Add, Text,, Window Size : %width%x%height%
-Gui, Add, Text, y+m, Fullscreen : %fullText%
-Gui, Add, Text,, Games Played : %games%
-Gui, Add, Text, y+m, Runtime : %timeText%
-Gui, Add, Text, y+m, XP Estimate : %XPCount%
-Gui, Add, Text, y+m, Money Estimate : %moneyCount%
-Gui, Tab, 3 ; Help
-Gui, Add, Text,, Ctrl+M : This menu
-Gui, Add, Text, y+m, Ctrl+S : Start (when menu closed)
-Gui, Add, Text, y+m, Ctrl+X : Stop (when running) or `n`texit script
-Gui, Add, Text,, Simple Mode : Slower and more `nprone to misclicks, but less `nprone to getting stuck
-Gui, Add, Text,, 'Save' closes GUI and keeps `nchanges, 'X' closes without `nchanges, and 'Exit' ends script
-Gui, Add, Text,, All Strategies require Infernal `nDeflation unlocked
-Gui, Add, Link, cgray, Detailed instructions on <a href="https://github.com/gavboi/btd6-farming">github</a>
-Gui, Show
-return
-
-; Update variables based on menu settings
-SaveButton:
-Gui, Submit
-InputDelay := BaseInputDelay * (1+ExtraDelay)
-TransitionDelay := BaseTransitionDelay * (1+ExtraDelay)
-GuiClose:
-menuOpen := false
-tt("Functions resumed.")
-return
-
-; ------------------------- Exit
-; Stop script, or close script if already stopped
-^x::
-ExitButton:
-close:
-if toggle {
-    inCriticalSection := false
-	step := 0
-	Gosub turnOff
-} else {
-	MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
-	IfMsgBox, OK
-		ExitApp
-	MsgBox, , %ThisTitle%, Script continuing..., 1
-}
-return
-
-; ------------------------- Disable on unactive
-; Stop script to avoid click checks if game/menu isn't active
-checkActive:
-if !(WinActive(GameTitle) || WinActive(ThisTitle)) { 
-	Gosub turnOff
-}
-return
-
-; ------------------------- Start farming
-; Main loop
-start:
-Gosub scaling
-toggle := true
-timeStart := A_TickCount
-while toggle {
-	if (step=0) {								; STEP 0: MENU
-        inCriticalSection := true
-		tt("Starting round...")
-		clickHere(835, 935)						; click play
-		Sleep TransitionDelay
-		clickHere(1340, 975)					; click expert maps
-		Sleep TransitionDelay
-		clickHere(960, 580)						; click infernal
-		Sleep TransitionDelay
-		clickHere(625, 400)						; click easy
-		Sleep TransitionDelay
-		clickHere(1290, 445)					; click deflation
-		Sleep TransitionDelay
-		clickHere(1100, 720)					; try and click overwrite
-		step := 1
-        inCriticalSection := false
-	}
-	if (step=1) {								; STEP 1: WAIT FOR LOAD
-		color := 0
-		while color != 0x00e15d and toggle and !menuOpen {	; wait for start
-			tt("Waiting for game...")
-			color := colorHere(1020, 760)
-			Sleep InputDelay
-		}
-		if toggle {
-			step := 2
-		}
-	}
-	if (step=2) {								; STEP 2: PLACING TOWERS
-        inCriticalSection := true
-        clickHere(1020, 760)
-        clickHere(10, 10)
-        Sleep 2*TransitionDelay
-        tt("Placing towers...")
-        if (Strategy="Heli") {
-            press("b")								; place heli
-            clickHere(1560, 575)
-            clickHere(1560, 575)
-            pressStream(",,,..")
-            clickHere(0, 0)
-            press("z") 								; place sniper
-            clickHere(835, 330)
-            clickHere(835, 330)
-            pressStream(",,////")
-            press("{Tab}")
-            press("{Tab}")
-            press("{Tab}")
-            clickHere(0, 0)
-            press("b")								; place heli
-            clickHere(110, 575)
-            clickHere(110, 575)
-            pressStream(",,,..")
-            clickHere(0, 0)
-            press()									; place target monkey
-            clickHere(835, 745)
-            clickHere(835, 745)
-        }
-        if (Strategy="Sniper") {
-            press("k")                              ; place village
-            clickHere(1575, 500)
-            clickHere(1575, 500)
-            pressStream(",,//")
-            clickHere(0, 0)
-            press("z")                              ; place sniper
-            clickHere(1550, 585)
-            clickHere(1550, 585)
-            pressStream("..////")
-            clickHere(0, 0)
-            press("f")                              ; place alchemist
-            clickHere(1575, 650)
-            clickHere(1575, 650)
-            pressStream(",,,/")
-            clickHere(0, 0)
-            press()									; place target monkey
-            clickHere(110, 560)
-            clickHere(110, 560)
-        }
-		pressStream(",./,./,./,./,./,./")
-		clickHere(30, 0)
-		press("{Space}")						; start
-		press("{Space}")
-		step := 3
-        inCriticalSection := false
-	}
-	if (step=3) {								; STEP 3: WAIT FOR STATE CHANGE
-		color := 0
-		checking := 1
-		while checking and toggle and !menuOpen {	; wait for things to happen
-            tt("Waiting for end...")
-            color := colorHere(1030, 900)	 	; check for victory stats's next button
-            if (nearColor(color, 0x00e76e)) {
-                inCriticalSection := true
-                tt("victory!")
-                clickHere(1030, 900)
-                Sleep TransitionDelay
-                clickHere(700, 800) 			; home button
-                checking := 0
-                games := games + 1
-                inCriticalSection := false
-            }
-            color := colorHere(925, 770)		; check for defeat's restart button
-            if (nearColor(color, 0x00ddff)) {
-                tt("defeat")
-                clickHere(700, 800) 			; home button
-                checking := 0
-            }
-            color := colorHere(830, 540)		; check for level up
-            if (nearColor(color, 0x1d61f5)) {
-                inCriticalSection := true
-                tt("lvl up!")
-                clickHere(30, 30)	 			; out of the way for level number
-                Sleep TransitionDelay
-                clickHere(30, 30)	 			; out of the way for knowledge
-                lvls := lvls + 1
-                inCriticalSection := false
-            }
-			Sleep InputDelay
-		}
-		if toggle {
-			step := 4
-		}
-	}
-	if (step=4) {								        ; STEP 4: LOAD HOME SCREEN
-		color := 0
-		while !nearColor(color, 0xffffff) and toggle and !menuOpen {	; wait for home screen
-			tt("Waiting for menu...")
-			color := colorHere(830, 930)
-			Sleep InputDelay
-		}
-		step := 0
-	}
-}
 return
 
 ; Click at location, normalised with delay added
@@ -406,3 +176,249 @@ pressStream(keys) {
 		press(k[c])
 	return
 }
+
+debug:
+Gui, Debug:New,, Variables snapshot
+Gui, Font, s10, Courier
+Gui, Add, Text,, toggle:%toggle%
+Gui, Add, Text,, step:%step%
+Gui, Add, Text,, color:%color%
+Gui, Add, Text,, InputDelay:%InputDelay%
+Gui, Add, Text,, TransitionDelay:%TransitionDelay%
+Gui, Add, Text,, menuOpen:%menuOpen%
+Gui, Show
+return
+
+
+; ------------------------- Menu
+; Options and information window
+menu:
+; don't interrupt script doing things
+while (inCriticalSection) {
+    Sleep 500
+}
+menuOpen := true
+; calculate needed information
+Gosub scaling
+toggleText := toggle ? "On" : "Off"
+fullText := full ? "Yes" : "No"
+XPCount := 57000*games
+moneyCount := 66*games
+if (toggle) {
+	t := totalTime + (A_TickCount - timeStart) / 1000
+} else {
+	t := totalTime
+}
+tm := Floor(t / 60)
+ts := Mod(t, 60)
+timeText := tm . "min " . ts . "s"
+; create menu
+Gui, BTDF:New,, %ThisTitle%
+Gui, Font, s10, Courier
+Gui, Add, Tab3,, Control|Tracking|Help|
+Gui, Tab, 1 ; Control
+Gui, Add, GroupBox, Section w200 h170, Options
+Gui, Add, Text, xp+10 yp+18, Target Monkey:
+Gui, Add, DropDownList, vTargetMonkey, Dart|Boomerang|Bomb|Tack|Ice|Glue|Sniper|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Spike|Village|Engineer|Handler
+GuiControl, ChooseString, TargetMonkey, %TargetMonkey%
+Gui, Add, Text,, Strategy:
+Gui, Add, DropDownList, vStrategy, Heli|Sniper
+GuiControl, ChooseString, Strategy, %Strategy%
+Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
+; Simple Mode button is unused
+Gui, Add, CheckBox, vSimple, UNUSED
+GuiControl, Disable, Simple
+Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
+Gui, Add, Button, gExitButton x+m yp w80, E&xit
+Gui, Tab, 2 ; Tracking
+Gui, Add, Text,, Window Size : %width%x%height%
+Gui, Add, Text, y+m, Fullscreen : %fullText%
+Gui, Add, Text,, Games Played : %games%
+Gui, Add, Text, y+m, Runtime : %timeText%
+Gui, Add, Text, y+m, XP Estimate : %XPCount%
+Gui, Add, Text, y+m, Money Estimate : %moneyCount%
+Gui, Tab, 3 ; Help
+Gui, Add, Text,, Ctrl+M : This menu
+Gui, Add, Text, y+m, Ctrl+S : Start (when menu closed)
+Gui, Add, Text, y+m, Ctrl+X : Stop (when running) or `n`texit script
+Gui, Add, Text,, Simple Mode : Slower and more `nprone to misclicks, but less `nprone to getting stuck
+Gui, Add, Text,, 'Save' closes GUI and keeps `nchanges, 'X' closes without `nchanges, and 'Exit' ends script
+Gui, Add, Text,, All Strategies require Infernal `nDeflation unlocked
+Gui, Add, Link, cgray, Detailed instructions on <a href="https://github.com/gavboi/btd6-farming">github</a>
+Gui, Show
+return
+
+; Update variables based on menu settings
+SaveButton:
+Gui, Submit
+InputDelay := BaseInputDelay * (1+ExtraDelay)
+TransitionDelay := BaseTransitionDelay * (1+ExtraDelay)
+GuiClose:
+menuOpen := false
+tt("Functions resumed.")
+return
+
+; ------------------------- Exit
+; Stop script, or close script if already stopped
+^x::
+ExitButton:
+close:
+if toggle {
+    inCriticalSection := false
+	step := 0
+	Gosub turnOff
+} else {
+	MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
+	IfMsgBox, OK
+		ExitApp
+	MsgBox, , %ThisTitle%, Script continuing..., 1
+}
+return
+
+; ------------------------- Disable on unactive
+; Stop script to avoid click checks if game/menu isn't active
+checkActive:
+if (!WinActive(GameTitle)) { 
+	Gosub turnOff
+}
+return
+
+; ------------------------- Start farming
+; Main loop
+start:
+Gosub scaling
+toggle := true
+timeStart := A_TickCount
+while (toggle) {
+	if (step=0) {								; STEP 0: MENU
+        inCriticalSection := true
+		tt("Starting round...")
+		clickHere(835, 935)						; click play
+		Sleep TransitionDelay
+		clickHere(1340, 975)					; click expert maps
+		Sleep TransitionDelay
+		clickHere(1460, 580)					; click infernal
+		Sleep TransitionDelay
+		clickHere(625, 400)						; click easy
+		Sleep TransitionDelay
+		clickHere(1290, 445)					; click deflation
+		Sleep TransitionDelay
+		clickHere(1100, 720)					; try and click overwrite
+		step := 1
+        inCriticalSection := false
+	}
+	if (step=1) {								; STEP 1: WAIT FOR LOAD
+		color := 0
+		while (!nearColor(color, 0x00e15d) and toggle and !menuOpen) { ; wait for start
+			tt("Waiting for game...")
+			color := colorHere(1020, 760)
+			Sleep InputDelay
+		}
+		step := 2
+	}
+	if (step=2) {								; STEP 2: PLACING TOWERS
+        inCriticalSection := true
+        clickHere(1020, 760)
+        clickHere(10, 10)
+        Sleep 2*TransitionDelay
+        tt("Placing towers...")
+        if (Strategy="Heli") {
+            press("b")								; place heli
+            clickHere(1560, 575)
+            clickHere(1560, 575)
+            pressStream(",,,..")
+            clickHere(0, 0)
+            press("z") 								; place sniper
+            clickHere(835, 330)
+            clickHere(835, 330)
+            pressStream(",,////")
+            press("{Tab}")
+            press("{Tab}")
+            press("{Tab}")
+            clickHere(0, 0)
+            press("b")								; place heli
+            clickHere(110, 575)
+            clickHere(110, 575)
+            pressStream(",,,..")
+            clickHere(0, 0)
+            press()									; place target monkey
+            clickHere(835, 745)
+            clickHere(835, 745)
+        }
+        if (Strategy="Sniper") {
+            press("k")                              ; place village
+            clickHere(1575, 500)
+            clickHere(1575, 500)
+            pressStream(",,//")
+            clickHere(0, 0)
+            press("z")                              ; place sniper
+            clickHere(1550, 585)
+            clickHere(1550, 585)
+            pressStream("..////")
+            clickHere(0, 0)
+            press("f")                              ; place alchemist
+            clickHere(1575, 650)
+            clickHere(1575, 650)
+            pressStream(",,,/")
+            clickHere(0, 0)
+            press()									; place target monkey
+            clickHere(110, 560)
+            clickHere(110, 560)
+        }
+		pressStream(",./,./,./,./,./,./")
+		clickHere(30, 0)
+		press("{Space}")						; start
+		press("{Space}")
+		step := 3
+        inCriticalSection := false
+	}
+	if (step=3) {								; STEP 3: WAIT FOR STATE CHANGE
+		color := 0
+		checking := 1
+		while (checking and toggle and !menuOpen) {	; wait for things to happen
+            tt("Waiting for end...")
+            color := colorHere(1030, 900)	 	; check for victory stats's next button
+            if (nearColor(color, 0x00e76e)) {
+                inCriticalSection := true
+                tt("victory!")
+                clickHere(1030, 900)
+                Sleep TransitionDelay
+                clickHere(700, 800) 			; home button
+                checking := 0
+                games := games + 1
+                inCriticalSection := false
+            }
+            color := colorHere(925, 770)		; check for defeat's restart button
+            if (nearColor(color, 0x00ddff)) {
+                tt("defeat")
+                clickHere(700, 800) 			; home button
+                checking := 0
+            }
+            color := colorHere(830, 540)		; check for level up
+            if (nearColor(color, 0x1d61f5)) {
+                inCriticalSection := true
+                tt("lvl up!")
+                clickHere(30, 30)	 			; out of the way for level number
+                Sleep TransitionDelay
+                clickHere(30, 30)	 			; out of the way for knowledge
+                lvls := lvls + 1
+                inCriticalSection := false
+            }
+			Sleep InputDelay
+		}
+		if (toggle and !menuOpen) {
+			step := 4
+		}
+	}
+	if (step=4) {								        ; STEP 4: LOAD HOME SCREEN
+		color := 0
+		while (!nearColor(color, 0xffffff) and toggle and !menuOpen) {	; wait for home screen
+			tt("Waiting for menu...")
+			color := colorHere(830, 930)
+			Sleep InputDelay
+		}
+		step := 0
+	}
+}
+MsgBox, DONEEE
+return
