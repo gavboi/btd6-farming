@@ -65,7 +65,7 @@ GameTitle := "BloonsTD6"
 Hotkey, IfWinActive, %GameTitle%
 Hotkey, ^m, menu
 Hotkey, ^s, start
-Hotkey, ^d, debug
+Hotkey, ^d, debug, Off
 
 ; ============================== Functions
 ; Startup message
