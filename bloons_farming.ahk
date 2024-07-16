@@ -10,9 +10,8 @@ SetTitleMatchMode 2
 
 ; ------------------------- Variables
 toggle := false
-inCriticalSection := false
 menuOpen := false
-step := 0
+step := 1
 
 xsh := 0
 ysh := 0
@@ -186,17 +185,13 @@ Gui, Add, Text,, color:%color%
 Gui, Add, Text,, InputDelay:%InputDelay%
 Gui, Add, Text,, TransitionDelay:%TransitionDelay%
 Gui, Add, Text,, menuOpen:%menuOpen%
-Gui, Show
+Gui, Debug:Show
 return
 
 
 ; ------------------------- Menu
 ; Options and information window
 menu:
-; don't interrupt script doing things
-while (inCriticalSection) {
-    Sleep 500
-}
 menuOpen := true
 ; calculate needed information
 Gosub scaling
@@ -211,7 +206,7 @@ if (toggle) {
 }
 tm := Floor(t / 60)
 ts := Mod(t, 60)
-timeText := tm . "min " . ts . "s"
+timeText := tm . "min " . Round(ts, 1) . "s"
 ; create menu
 Gui, BTDF:New,, %ThisTitle%
 Gui, Font, s10, Courier
@@ -253,19 +248,23 @@ SaveButton:
 Gui, Submit
 InputDelay := BaseInputDelay * (1+ExtraDelay)
 TransitionDelay := BaseTransitionDelay * (1+ExtraDelay)
-GuiClose:
+BTDFGuiClose:
+Gui, BTDF:Destroy
 menuOpen := false
-tt("Functions resumed.")
+Sleep 250
+if (toggleText="On") {
+    tt("Functions resumed.")
+    Gosub start
+}
 return
 
 ; ------------------------- Exit
 ; Stop script, or close script if already stopped
 ^x::
 ExitButton:
-close:
 if toggle {
-    inCriticalSection := false
-	step := 0
+    Hotkey, ^m, On
+	step := 1
 	Gosub turnOff
 } else {
 	MsgBox, 17, %ThisTitle%, Exit %A_ScriptName%?,
@@ -290,8 +289,8 @@ Gosub scaling
 toggle := true
 timeStart := A_TickCount
 while (toggle) {
-	if (step=0) {								; STEP 0: MENU
-        inCriticalSection := true
+	if (step=1) {								; STEP 1.1: MENU
+        Hotkey, ^m, Off
 		tt("Starting round...")
 		clickHere(835, 935)						; click play
 		Sleep TransitionDelay
@@ -304,31 +303,25 @@ while (toggle) {
 		clickHere(1290, 445)					; click deflation
 		Sleep TransitionDelay
 		clickHere(1100, 720)					; try and click overwrite
-		step := 1
-        inCriticalSection := false
-	}
-	if (step=1) {								; STEP 1: WAIT FOR LOAD
+                                                ; STEP 1.2: WAIT FOR LOAD
 		color := 0
-		while (!nearColor(color, 0x00e15d) and toggle and !menuOpen) { ; wait for start
+		while (!nearColor(color, 0x00e15d) and toggle) { ; wait for start
 			tt("Waiting for game...")
 			color := colorHere(1020, 760)
 			Sleep InputDelay
 		}
-		step := 2
-	}
-	if (step=2) {								; STEP 2: PLACING TOWERS
-        inCriticalSection := true
-        clickHere(1020, 760)
+                                                ; STEP 1.3: PLACING TOWERS
+        clickHere(1020, 760)                    ; click start
         clickHere(10, 10)
         Sleep 2*TransitionDelay
         tt("Placing towers...")
         if (Strategy="Heli") {
-            press("b")								; place heli
+            press("b")							; place heli
             clickHere(1560, 575)
             clickHere(1560, 575)
             pressStream(",,,..")
             clickHere(0, 0)
-            press("z") 								; place sniper
+            press("z") 							; place sniper
             clickHere(835, 330)
             clickHere(835, 330)
             pressStream(",,////")
@@ -336,89 +329,86 @@ while (toggle) {
             press("{Tab}")
             press("{Tab}")
             clickHere(0, 0)
-            press("b")								; place heli
+            press("b")							; place heli
             clickHere(110, 575)
             clickHere(110, 575)
             pressStream(",,,..")
             clickHere(0, 0)
-            press()									; place target monkey
+            press()								; place target monkey
             clickHere(835, 745)
             clickHere(835, 745)
         }
         if (Strategy="Sniper") {
-            press("k")                              ; place village
+            press("k")                          ; place village
             clickHere(1575, 500)
             clickHere(1575, 500)
             pressStream(",,//")
             clickHere(0, 0)
-            press("z")                              ; place sniper
+            press("z")                          ; place sniper
             clickHere(1550, 585)
             clickHere(1550, 585)
             pressStream("..////")
             clickHere(0, 0)
-            press("f")                              ; place alchemist
+            press("f")                          ; place alchemist
             clickHere(1575, 650)
             clickHere(1575, 650)
             pressStream(",,,/")
             clickHere(0, 0)
-            press()									; place target monkey
+            press()								; place target monkey
             clickHere(110, 560)
             clickHere(110, 560)
         }
 		pressStream(",./,./,./,./,./,./")
 		clickHere(30, 0)
 		press("{Space}")						; start
-		press("{Space}")
-		step := 3
-        inCriticalSection := false
+		press("{Space}")                        ; speed up
+		step := 2
+        Hotkey, ^m, On
 	}
-	if (step=3) {								; STEP 3: WAIT FOR STATE CHANGE
+	if (step=2) {								; STEP 2: WAIT FOR STATE CHANGE
 		color := 0
 		checking := 1
 		while (checking and toggle and !menuOpen) {	; wait for things to happen
             tt("Waiting for end...")
             color := colorHere(1030, 900)	 	; check for victory stats's next button
             if (nearColor(color, 0x00e76e)) {
-                inCriticalSection := true
+                Hotkey, ^m, Off
                 tt("victory!")
                 clickHere(1030, 900)
                 Sleep TransitionDelay
                 clickHere(700, 800) 			; home button
                 checking := 0
                 games := games + 1
-                inCriticalSection := false
+                step := 3
             }
             color := colorHere(925, 770)		; check for defeat's restart button
             if (nearColor(color, 0x00ddff)) {
                 tt("defeat")
                 clickHere(700, 800) 			; home button
                 checking := 0
+                step := 3
             }
             color := colorHere(830, 540)		; check for level up
             if (nearColor(color, 0x1d61f5)) {
-                inCriticalSection := true
+                Hotkey, ^m, Off
                 tt("lvl up!")
                 clickHere(30, 30)	 			; out of the way for level number
                 Sleep TransitionDelay
                 clickHere(30, 30)	 			; out of the way for knowledge
                 lvls := lvls + 1
-                inCriticalSection := false
+                Hotkey, ^m, On
             }
 			Sleep InputDelay
 		}
-		if (toggle and !menuOpen) {
-			step := 4
-		}
-	}
-	if (step=4) {								        ; STEP 4: LOAD HOME SCREEN
-		color := 0
-		while (!nearColor(color, 0xffffff) and toggle and !menuOpen) {	; wait for home screen
-			tt("Waiting for menu...")
-			color := colorHere(830, 930)
-			Sleep InputDelay
-		}
-		step := 0
+        if (step=3) {                           ; STEP 3: LOAD HOME SCREEN
+            color := 0
+            while (!nearColor(color, 0xffffff) and toggle and !menuOpen) {	; wait for home screen
+                tt("Waiting for menu...")
+                color := colorHere(830, 930)
+                Sleep InputDelay
+            }
+            step := 1
+        }
 	}
 }
-MsgBox, DONEEE
 return
