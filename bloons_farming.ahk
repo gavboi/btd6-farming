@@ -220,9 +220,6 @@ Gui, Add, Text,, Strategy:
 Gui, Add, DropDownList, vStrategy, Heli|Sniper
 GuiControl, ChooseString, Strategy, %Strategy%
 Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
-; Simple Mode button is unused
-Gui, Add, CheckBox, vSimple, UNUSED
-GuiControl, Disable, Simple
 Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
 Gui, Add, Button, gExitButton x+m yp w80, E&xit
 Gui, Tab, 2 ; Tracking
@@ -236,7 +233,6 @@ Gui, Tab, 3 ; Help
 Gui, Add, Text,, Ctrl+M : This menu
 Gui, Add, Text, y+m, Ctrl+S : Start (when menu closed)
 Gui, Add, Text, y+m, Ctrl+X : Stop (when running) or `n`texit script
-Gui, Add, Text,, Simple Mode : Slower and more `nprone to misclicks, but less `nprone to getting stuck
 Gui, Add, Text,, 'Save' closes GUI and keeps `nchanges, 'X' closes without `nchanges, and 'Exit' ends script
 Gui, Add, Text,, All Strategies require Infernal `nDeflation unlocked
 Gui, Add, Link, cgray, Detailed instructions on <a href="https://github.com/gavboi/btd6-farming">github</a>
