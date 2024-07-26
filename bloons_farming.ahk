@@ -143,7 +143,7 @@ colorHere(x, y) {
 
 ; Check for colour equivalence under threshold - by user "colt" on ahk wiki
 nearColor(test, target) { 
-    tolerance := 5
+    tolerance := 10
     tb := format("{:d}", "0x" . substr(test,3,2))
     tg := format("{:d}", "0x" . substr(test,5,2))
     tr := format("{:d}", "0x" . substr(test,7,2))
@@ -228,6 +228,7 @@ Gui, Add, Text, y+m, Fullscreen : %fullText%
 Gui, Add, Text,, Games Played : %games%
 Gui, Add, Text, y+m, Runtime : %timeText%
 Gui, Add, Text, y+m, XP Estimate : %XPCount%
+Gui, Add, Text, y+m, Level Ups : %lvls%
 Gui, Add, Text, y+m, Money Estimate : %moneyCount%
 Gui, Tab, 3 ; Help
 Gui, Add, Text,, Ctrl+M : This menu
@@ -384,8 +385,8 @@ while (toggle) {
                 checking := 0
                 step := 3
             }
-            color := colorHere(830, 540)		; check for level up
-            if (nearColor(color, 0x1d61f5)) {
+            color := colorHere(274, 987)		; check for level up
+            if (nearColor(color, 0x194e9e)) {
                 Hotkey, ^m, Off
                 tt("lvl up!")
                 clickHere(30, 30)	 			; out of the way for level number
