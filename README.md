@@ -1,5 +1,7 @@
 # Bloons Tower Defense 6: Farming Script
 
+**SEE INFORMATION REGARDING UPDATE 44 [BELOW](#mermonkey)**
+
 ## What Is It?
 
 Repeatedly plays "Deflation" mode on the map "Infernal." Each game takes just under 6 minutes (10-11 games/hr). 
@@ -50,6 +52,18 @@ Newer, may lose some lives but has more leftover cash for XP monkey
 - Designed for 16:9 resolution, if mouse clicks are missing, try changing your resolution
 - Will work if game is fullscreen, but menu is nicer if it isn't in fullscreen
 - Must start script from main menu and make sure the last time you viewed the maps it was not left on the page where Infernal is currently visible
+
+### Mermonkey
+
+- Requires 3 million pops to unlock the base tower
+    - Total pop count of **all** tower types, **not** the damage
+    - Co-op will give **all** players the total of **all players' towers combined**
+    - Pops only counted on medium/hard difficuly and freeplay **is** allowed
+    - Easy/fast way to complete is by doing the MOAB Madness Quest about 3 times, takes less than 15 minutes
+        - [Tutorial](https://youtu.be/WVw36Pxh0GI?feature=shared)
+- Mermonkey hotkey is unset by default, **set it to the previously unused "o" key for the script to work**
+    - Default being unset is likely due to the other default hotkey assignments not leaving space for Mermonkey to be assigned beside the other magic monkeys
+- Due to issue https://github.com/gavboi/btd6-farming/issues/1, the script will need to be babysat while the tower is unlocking the initial upgrades
 
 ### Full Controls
 
