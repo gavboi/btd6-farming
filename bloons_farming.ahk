@@ -80,6 +80,7 @@ if (toggle) {
     timeEnd := A_TickCount
     totalTime := totalTime + (timeEnd - timeStart) / 1000
     tt("Functions stopped.")
+    tt(totalTime)
 }
 toggle := false
 return
@@ -218,7 +219,7 @@ Gui, Add, Text, xp+10 yp+18, Target Monkey:
 Gui, Add, DropDownList, vTargetMonkey, Dart|Boomerang|Bomb|Tack|Ice|Glue|Sniper|Mortar|Dartling|Wizard|Super|Ninja|Alchemist|Druid|Mermonkey|Spike|Village|Engineer|Handler
 GuiControl, ChooseString, TargetMonkey, %TargetMonkey%
 Gui, Add, Text,, Strategy:
-Gui, Add, DropDownList, vStrategy, Heli|Sniper
+Gui, Add, DropDownList, vStrategy, Heli|Sniper|Monkey Sub + Wizard
 GuiControl, ChooseString, Strategy, %Strategy%
 Gui, Add, CheckBox, Checked%ExtraDelay% vExtraDelay, Extra Delay
 Gui, Add, Button, gSaveButton xp ym+220 Default w80, &Save
@@ -356,7 +357,32 @@ while (toggle) {
             clickHere(110, 560)
             clickHere(110, 560)
         }
-        pressStream(",./,./,./,./,./,./")
+        if (Strategy="Monkey Sub + Wizard") {
+            press("a")                          ; place Wizard
+            clickHere(833, 789)
+            clickHere(833, 789)
+            pressStream("...//")
+            clickHere(0, 0)
+            press("a")                          ; place Wizard
+            clickHere(833, 292)
+            clickHere(833, 292)
+            pressStream("...//")
+            clickHere(0, 0)
+            press("x")                          ; place Sub
+            clickHere(473, 830)
+            clickHere(473, 830)
+            pressStream(",,////")
+            clickHere(0, 0)
+            press("x")
+            clickHere(1180,236)
+            clickHere(1180,236)
+            pressStream(",,///")
+            clickHere(0,0)
+            press()                                ; place target monkey
+            clickHere(506, 236)
+            clickHere(506, 236)
+        }
+        pressStream(",,,,,/////.....")
         clickHere(30, 0)
         press("{Space}")                        ; start
         press("{Space}")                        ; speed up
